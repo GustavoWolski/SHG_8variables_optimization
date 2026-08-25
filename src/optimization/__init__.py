@@ -24,6 +24,15 @@ from optimization.objective import (
     evaluate,
     objective,
 )
+from optimization.parameterization import (
+    DELTA_N,
+    INDEX_LOWER_BOUND,
+    INDEX_UPPER_BOUND,
+    NORMALIZED_PARAMETER_COUNT,
+    to_normalized,
+    to_physical,
+    validate_normalized,
+)
 
 __all__ = [
     "LOWER_BOUNDS",
@@ -46,4 +55,11 @@ __all__ = [
     "calculate_error_components",
     "evaluate",
     "objective",
+    "DELTA_N",
+    "INDEX_LOWER_BOUND",
+    "INDEX_UPPER_BOUND",
+    "NORMALIZED_PARAMETER_COUNT",
+    "to_normalized",
+    "to_physical",
+    "validate_normalized",
 ]

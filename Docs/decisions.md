@@ -200,6 +200,41 @@ paralelização, GPU, cache ou alterações da física. As projeções para budg
 elas excluem overhead de algoritmos, I/O e startup. O benchmark não escolhe o
 budget definitivo.
 
+## D-013 — Parametrização normalizada comum e dispersão estrita
+
+Todo algoritmo futuro trabalhará exclusivamente em `z ∈ [0, 1]^8` e chamará
+`optimization/parameterization.py` para obter `p`. Os quatro parâmetros
+independentes usam as transformações lineares acordadas. Cada par dispersivo
+usa o triângulo em coordenadas `x = n_w - 1.5` e
+`y = n_2w - n_w - DELTA_N`, com `x >= 0`, `y >= 0` e
+`x + y <= S`, onde `S = 6 - 1.5 - DELTA_N`. Para duas coordenadas uniformes
+`u, v`, a transformação é `x = S(1-sqrt(u))` e `y = S sqrt(u) v`.
+
+`DELTA_N = 64 * spacing(6.0) = 5.684341886080802e-14` é uma margem numérica
+nomeada e centralizada. Ela equivale a 64 ULPs no maior índice, é cerca de
+`1.26e-14` da largura do intervalo óptico e garante que a soma float64
+preserve `n_w + DELTA_N <= n_2w`, inclusive nas fronteiras fechadas de `z`.
+Não é uma nova restrição física interpretativa: é o recorte numérico mínimo
+necessário para representar a desigualdade física estrita em um cubo fechado.
+
+A transformação é área-preservadora: `z[2], z[3]` e `z[4], z[5]` uniformes
+induzem distribuição uniforme em cada triângulo físico recortado, não a
+distribuição enviesada da interpolação sequencial simples. Na amostra fixa de
+100.000 vetores (`seed=20260826`), todos foram finitos e fisicamente válidos;
+as médias observadas de `x`/`y` foram `1.503598`/`1.492182` para `n2` e
+`1.504588`/`1.497865` para `n3`, próximas da média teórica `S/3 = 1.5`.
+
+`to_normalized` existe para debugging e análise. Ela é inversa no interior;
+no vértice de medida zero `n_w = 6 - DELTA_N, n_2w = 6`, em que a borda de
+`z` colapsa, retorna a convenção canônica de segunda coordenada igual a zero.
+Vetores físicos com gap estrito menor que `DELTA_N` permanecem válidos pelas
+constraints, mas não pertencem ao domínio normalizado recortado e não têm
+inversa nessa API.
+
+Esta mesma transformação será obrigatória para Random Search, DE, GA, PSO e
+CMA-ES. Assim, nenhum algoritmo receberá espaço físico ou tratamento de
+constraints mais favorável que outro.
+
 ## Ambiguidades abertas
 
 1. Os caminhos foram normalizados para `docs/methodology.md`,

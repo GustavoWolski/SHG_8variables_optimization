@@ -25,8 +25,9 @@
 - [x] Implementar somente `J = J_T + J_R`, sem penalidade de pico.
 - [x] Implementar e testar limites e dispersão normal em `optimization/constraints.py`.
 - [x] Garantir que cada avaliação detalhada retorne `J`, `J_T`, `J_R`, `p`, `T` e `R`.
+- [x] Implementar a parametrização comum `z ∈ [0,1]^8 → p` com dispersão normal por construção.
 
-## Otimização — bloqueada até a reparametrização compartilhada
+## Otimização — aguardando implementação explícita
 
 - [ ] Random Search.
 - [ ] Differential Evolution.
@@ -37,7 +38,7 @@
 
 ## Experimentos e análise futuros
 
-- [x] Medir o custo serial de uma avaliação completa da função objetivo.
+- [x] Medir o custo serial de uma avaliação completa da função objetivo (10.000 em 4,192534 s).
 - [ ] Definir orçamento comum de avaliações a partir do baseline e dos custos dos algoritmos.
 - [ ] Executar 30 seeds (avaliar 50 quando viável).
 - [ ] Salvar resultados reprodutíveis em `results/`.
