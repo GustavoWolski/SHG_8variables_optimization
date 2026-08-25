@@ -1,5 +1,16 @@
 # AGENTS.md — regras essenciais
 
+## Retomada operacional
+
+Antes de qualquer nova tarefa significativa:
+
+1. leia docs/PROJECT_STATE.md;
+2. leia docs/decisions.md;
+3. consulte docs/methodology.md quando a decisão for científica.
+
+Após cada novo checkpoint experimental significativo, atualize
+docs/PROJECT_STATE.md.
+
 ## Fontes de verdade
 
 Antes de modificar a física, leia nesta ordem:
@@ -24,8 +35,10 @@ O primeiro port Python deve reproduzir numericamente o MATLAB. A ordem é:
 6. função objetivo;
 7. somente então, algoritmos de otimização.
 
-Não implementar nesta fase GA, PSO, DE, CMA-ES, Random Search, busca local,
-surrogates, redes neurais, Bayesian Optimization, NSGA-II, RL ou PINNs.
+Não implementar algoritmos além da etapa explicitamente autorizada. Random
+Search e Differential Evolution já existem; GA, PSO, CMA-ES, busca local,
+surrogates, redes neurais, Bayesian Optimization, NSGA-II, RL ou PINNs
+dependem de autorização explícita.
 
 ## Parâmetros e unidades
 

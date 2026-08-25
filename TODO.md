@@ -27,11 +27,12 @@
 - [x] Garantir que cada avaliação detalhada retorne `J`, `J_T`, `J_R`, `p`, `T` e `R`.
 - [x] Implementar a parametrização comum `z ∈ [0,1]^8 → p` com dispersão normal por construção.
 
-## Otimização — aguardando implementação explícita
+## Otimização — baselines e algoritmos
 
-- [ ] Random Search.
-- [ ] Differential Evolution.
-- [ ] Genetic Algorithm.
+- [x] Random Search no espaço normalizado, com seed e budget por avaliações físicas.
+- [x] Differential Evolution no espaço normalizado, com seed, configuração documentada e budget exato por avaliações físicas.
+- [x] Executar e salvar os baselines preliminares de Random Search e DE com 5 seeds e 50.000 avaliações físicas por seed.
+- [ ] Genetic Algorithm (próxima implementação).
 - [ ] Particle Swarm Optimization.
 - [ ] CMA-ES.
 - [ ] Runner comum com seeds, orçamento por avaliações e convergência.
@@ -41,7 +42,7 @@
 - [x] Medir o custo serial de uma avaliação completa da função objetivo (10.000 em 4,192534 s).
 - [ ] Definir orçamento comum de avaliações a partir do baseline e dos custos dos algoritmos.
 - [ ] Executar 30 seeds (avaliar 50 quando viável).
-- [ ] Salvar resultados reprodutíveis em `results/`.
+- [ ] Executar e salvar o experimento comparativo final em `results/`.
 - [ ] Produzir estatísticas, gráficos e análise de identificabilidade.
 - [ ] Definir análise estatística adequada e correção de múltiplas comparações.
 - [ ] Avaliar sensibilidade, bootstrap, leave-one-out e métodos híbridos somente após o benchmark principal.

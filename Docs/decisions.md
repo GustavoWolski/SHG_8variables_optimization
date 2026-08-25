@@ -21,9 +21,10 @@ resolvido silenciosamente.
 
 Foram criados os pacotes, a configuração de ambiente, pytest, documentação,
 os auxiliares `rij`, `tij` e `nlimeglass`, e o núcleo físico do simulador de
-quatro camadas. Não há função objetivo ou otimizadores. As constraints
-oficiais pertencem exclusivamente a `optimization/constraints.py`; o
-simulador permanece sem regras de otimização.
+quatro camadas. A função objetivo e os baselines Random Search e Differential
+Evolution estão separados da física; GA, PSO e CMA-ES ainda não existem. As constraints oficiais
+pertencem exclusivamente a `optimization/constraints.py`; o simulador
+permanece sem regras de otimização.
 
 ## D-003 — Inventário do modelo MATLAB
 
@@ -234,6 +235,67 @@ inversa nessa API.
 Esta mesma transformação será obrigatória para Random Search, DE, GA, PSO e
 CMA-ES. Assim, nenhum algoritmo receberá espaço físico ou tratamento de
 constraints mais favorável que outro.
+
+## D-014 — Random Search como baseline global
+
+`optimization/random_search.py` é o primeiro baseline global. Ele recebe
+explicitamente `seed` e `budget`, usa `np.random.default_rng(seed)` e amostra
+somente `z ~ U([0,1]^8)`. Cada `z` passa pela transformação compartilhada
+`to_physical(z)` antes de uma única chamada de `ObjectiveEvaluator`; não há
+repair, penalty, rejection ou regra adicional de constraints.
+
+O budget é definido exclusivamente pelo contador físico
+`ObjectiveEvaluator.n_evaluations`, e a execução termina exatamente nesse
+valor. O histórico armazena o melhor valor após cada avaliação física. Em
+caso de igualdade exata de `J`, a comparação estrita mantém a primeira
+solução encontrada, tornando o desempate determinístico. Esta implementação
+não estabelece um resultado científico nem altera o budget piloto planejado
+de 50.000 avaliações.
+
+## D-015 — Differential Evolution como segundo baseline global
+
+optimization/differential_evolution.py implementa somente DE no espaço
+normalizado z em [0,1]^8. Cada vetor proposto pelo solver é transformado por
+to_physical e avaliado uma única vez por ObjectiveEvaluator; portanto, a
+parametrização compartilhada preserva os bounds e a dispersão normal sem
+rejection, repair ou penalty. Nenhuma regra de otimização foi adicionada ao
+simulador ou às constraints.
+
+O baseline usa SciPy 1.18.1 com strategy best1bin, popsize 15 (população
+nominal 120), mutation (0.5, 1.0), recombination 0.7, init latinhypercube,
+updating deferred, tol=0, atol=0, workers=1, vectorized=False e polish=False.
+Não há paralelismo, refinamento local nem avaliação adicional ao término.
+
+O limite de orçamento é rigoroso: a implementação usa DifferentialEvolutionSolver
+do SciPy com maxfun igual ao budget, atualização deferred e avanço controlado
+até ObjectiveEvaluator.n_evaluations alcançar o mesmo valor. A atualização
+deferred permite que a última geração seja parcial quando necessário. O
+contador privado nfev do solver também é verificado contra o budget. Essa
+escolha foi necessária porque a função pública de conveniência do SciPy não
+expõe maxfun. Trata-se de um detalhe de infraestrutura de contabilização, não
+de uma alteração do algoritmo ou da função objetivo.
+
+O smoke test com seed 1 e 1.000 avaliações terminou com
+n_evaluations = nfev = 1.000 e J = 0.8054211344755735. O experimento
+preliminar de cinco seeds, cada uma com 50.000 avaliações, está versionado em
+results/differential_evolution_baseline/. A comparação com Random Search
+naquele diretório é somente descritiva por avaliação física e não estabelece
+uma conclusão científica entre algoritmos.
+
+## D-016 — Política dos baselines preliminares e checkpoint
+
+Random Search e Differential Evolution foram executados com as mesmas seeds
+inteiras 1, 2, 3, 4 e 5, orçamento de 50.000 avaliações físicas por seed e
+total de 250.000 avaliações por algoritmo. O Random Search obteve melhor,
+mediana e pior J de 0.5841852495274906, 0.6852560724860886 e
+0.8865663180429331; DE obteve 0.3818429946001101, 0.3818430194775517 e
+0.3818430638493236, respectivamente.
+
+Esses números e as curvas são um checkpoint reprodutível, não um resultado
+estatístico final: cinco seeds não autorizam inferência de superioridade
+estatística. O budget final e a escolha entre 30 e 50 seeds continuam
+abertos. O estado consolidado para retomada está em docs/PROJECT_STATE.md;
+ele deve ser atualizado após cada checkpoint experimental significativo.
 
 ## Ambiguidades abertas
 

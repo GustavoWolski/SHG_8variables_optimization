@@ -33,6 +33,15 @@ from optimization.parameterization import (
     to_physical,
     validate_normalized,
 )
+from optimization.random_search import ConvergenceRecord, RandomSearchResult, random_search
+from optimization.differential_evolution import (
+    DEFAULT_CONFIGURATION,
+    NORMALIZED_BOUNDS,
+    DifferentialEvolutionConfiguration,
+    DifferentialEvolutionConvergenceRecord,
+    DifferentialEvolutionResult,
+    differential_evolution,
+)
 
 __all__ = [
     "LOWER_BOUNDS",
@@ -62,4 +71,13 @@ __all__ = [
     "to_normalized",
     "to_physical",
     "validate_normalized",
+    "ConvergenceRecord",
+    "RandomSearchResult",
+    "random_search",
+    "DEFAULT_CONFIGURATION",
+    "NORMALIZED_BOUNDS",
+    "DifferentialEvolutionConfiguration",
+    "DifferentialEvolutionConvergenceRecord",
+    "DifferentialEvolutionResult",
+    "differential_evolution",
 ]

@@ -342,7 +342,9 @@ $$
 
 Nenhum algoritmo novo deverá ser considerado validado antes da equivalência numérica do simulador.
 
-A tolerância numérica será definida após os primeiros testes.
+A regressão automática atual usa `rtol=1e-12` e `atol=1e-28`, valores
+conservadores diante dos erros observados de ordem 1e-14 a 1e-15. Qualquer
+alteração futura dessa tolerância deve ser justificada pela validação física.
 
 ---
 
@@ -379,10 +381,9 @@ Nenhum algoritmo deverá possuir lógica física exclusiva fora das constraints 
 
 # 14. Baselines
 
-Serão utilizados inicialmente:
-
-- método local/multistart original;
-- Random Search.
+Os baselines já implementados são Random Search e Differential Evolution.
+O método local/multistart legado permanece apenas como referência histórica,
+não como participante da comparação principal atual.
 
 ---
 
@@ -395,13 +396,9 @@ A comparação principal deverá incluir:
 - Particle Swarm Optimization (PSO);
 - CMA-ES.
 
-Ordem inicial sugerida de implementação:
-
-1. Random Search;
-2. Differential Evolution;
-3. Genetic Algorithm;
-4. PSO;
-5. CMA-ES.
+Estado no checkpoint de 25 de agosto de 2026: Random Search e Differential
+Evolution estão implementados e testados. A próxima implementação é Genetic
+Algorithm, seguida de PSO e CMA-ES.
 
 ---
 
@@ -762,43 +759,25 @@ valid_physics: true
 
 # 30. Próximos Passos
 
-1. Organizar o repositório.
-2. Preservar os MATLAB em `legacy_matlab/`.
-3. Portar `rij.m`.
-4. Portar `tij.m`.
-5. Portar `nlimeglass.m`.
-6. Criar testes unitários.
-7. Portar o simulador principal.
-8. Validar Python contra MATLAB.
-9. Medir tempo médio de uma avaliação.
-10. Definir budget inicial.
-11. Implementar $J=J_T+J_R$ sem penalidade de pico.
-12. Implementar constraints.
-13. Implementar Random Search.
-14. Implementar Differential Evolution.
-15. Implementar Genetic Algorithm.
-16. Implementar PSO.
-17. Implementar CMA-ES.
-18. Criar runner comum.
-19. Executar múltiplas seeds.
-20. Registrar convergência.
-21. Comparar qualidade, robustez e eficiência.
-22. Analisar estabilidade dos parâmetros.
-23. Investigar identificabilidade.
-24. Realizar análise estatística.
-25. Realizar análise de sensibilidade.
-26. Avaliar validação por reamostragem.
-27. Testar métodos híbridos.
-28. Produzir gráficos e tabelas para publicação.
+Concluídos: organização do repositório, preservação do MATLAB, port físico,
+validação MATLAB/Octave × Python, benchmark, função objetivo, constraints,
+parametrização normalizada, Random Search e Differential Evolution.
+
+1. Implementar Genetic Algorithm.
+2. Implementar PSO.
+3. Implementar CMA-ES.
+4. Criar runner comum para o experimento comparativo.
+5. Definir o budget final e executar 30 ou 50 seeds.
+6. Comparar qualidade, robustez e eficiência.
+7. Analisar estabilidade, identificabilidade, sensibilidade e reamostragem.
+8. Só após a comparação principal, avaliar métodos híbridos e extensões.
 
 ---
 
 # 31. Pontos Ainda em Aberto
 
-- tempo médio de uma avaliação em Python;
 - orçamento final de avaliações;
 - uso definitivo de 30 ou 50 seeds;
-- tolerância de equivalência MATLAB × Python;
 - existência de incertezas experimentais por ponto;
 - disponibilidade de outras amostras ou conjuntos experimentais;
 - existência de valores de literatura ou experimentais para validação independente dos parâmetros recuperados.

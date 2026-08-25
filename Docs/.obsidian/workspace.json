@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "99244c367c8ed7d2",
+        "id": "51d6a720158746b2",
         "type": "tabs",
         "children": [
           {
-            "id": "bced1de460f5cb22",
+            "id": "17f64542a447d7c4",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "decisions.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "Nova aba"
+              "title": "decisions"
             }
           }
         ]
@@ -184,8 +188,10 @@
       "bases:Criar nova base": false
     }
   },
-  "active": "bced1de460f5cb22",
+  "active": "17f64542a447d7c4",
   "lastOpenFiles": [
+    "Sem título.canvas",
+    "Sem título",
     "Variaveis.md",
     "ideias.md",
     "Papers/NonLTM.pdf",
