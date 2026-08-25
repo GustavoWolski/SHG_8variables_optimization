@@ -21,9 +21,9 @@ resolvido silenciosamente.
 
 Foram criados os pacotes, a configuração de ambiente, pytest, documentação,
 os auxiliares `rij`, `tij` e `nlimeglass`, e o núcleo físico do simulador de
-quatro camadas. Não há função objetivo, constraints ou otimizadores. Os
-testes atuais validam apenas sanidade, formato e determinismo do simulador;
-não constituem equivalência numérica MATLAB × Python.
+quatro camadas. Não há função objetivo ou otimizadores. As constraints
+oficiais pertencem exclusivamente a `optimization/constraints.py`; o
+simulador permanece sem regras de otimização.
 
 ## D-003 — Inventário do modelo MATLAB
 
@@ -124,10 +124,48 @@ validador `scripts/validate_matlab_python.py` produz comparações de `T`, `R`,
 `I_4`, `I_1`, `IMoS24`, `IMoS21`, além de erro máximo absoluto e norma de
 Frobenius por intermediário.
 
-Neste ambiente não foram encontrados os executáveis `matlab`, `octave` ou
-`octave-cli`. Portanto, nenhum CSV de referência foi fabricado, nenhuma
-tolerância foi escolhida e a equivalência numérica ainda está pendente de uma
-execução real do exportador.
+Os CSVs foram gerados por uma execução real de MATLAB/Octave e comparados com
+o Python. Os máximos observados foram: erro relativo de `T` igual a
+`1.6717503026056207e-14`, erro relativo de `R` igual a
+`3.644239657078057e-15`, erro absoluto intermediário igual a
+`8.881784197001252e-16` e norma de Frobenius intermediária igual a
+`1.0878030299442186e-15`. Isso confirma equivalência numérica em precisão de
+ponto flutuante; os CSVs em `tests/reference/` são a regressão versionada.
+A regressão automática de `T` e `R` usa `rtol=1e-12` e `atol=1e-28`, margem
+conservadora sobre os máximos observados sem mascarar uma divergência física.
+
+## D-009 — Espaço oficial de parâmetros e constraints
+
+`optimization/constraints.py` define, em uma única fonte reutilizável, a
+ordem oficial dos oito parâmetros, unidades, limites fechados, validação de
+vetor real finito e as duas desigualdades estritas de dispersão normal. A API
+retorna todas as violações estruturadas e também mensagens legíveis; ela não é
+chamada por `physics/simulator.py`, que precisa continuar avaliando vetores
+legados durante validações.
+
+Os limites escalares são inclusivos. Entretanto, por serem estritas as
+condições `n2_w < n2_2w` e `re_n3_w < re_n3_2w`, os valores superiores de
+`n2_w` e `re_n3_w` não podem compor uma solução globalmente válida quando as
+respectivas frequências em `2w` também têm teto 6. Isso é consequência lógica
+das regras oficiais, não um novo limite.
+
+## D-010 — Estratégia futura para tratamento uniforme de constraints
+
+Foram avaliadas quatro estratégias. *Rejection* é simples, mas desperdiça
+avaliações e introduz eficiência dependente do algoritmo. *Repair* evita
+avaliações inválidas, porém pode concentrar candidatos nas fronteiras e
+distorcer operadores diferentes. *Penalty* exige calibrar pesos e ainda pode
+permitir que o simulador receba pontos inválidos. *Reparameterization* mapeia
+as coordenadas internas diretamente ao espaço viável e não consome avaliações
+da função objetivo com candidatos inválidos.
+
+A recomendação principal é uma reparametrização compartilhada, aplicada antes
+de toda avaliação por GA, PSO, DE e CMA-ES: para cada par dispersivo, gerar o
+índice de `w` e uma diferença positiva limitada até o teto 6. O mapeamento e
+o tratamento dos limites abertos necessários à desigualdade estrita serão
+definidos uma única vez antes do primeiro algoritmo. Rejection, repair e
+penalty não serão usados como estratégia principal; qualquer uso auxiliar
+deverá ser idêntico e contabilizado para todos os algoritmos.
 
 ## Ambiguidades abertas
 
@@ -144,6 +182,5 @@ execução real do exportador.
 4. O PDF `NonLTM.pdf` apresenta notas derivacionais com data de 2026 e, em
    uma expressão final, usa módulos quadrados para uma fonte onde o MATLAB
    usa quadrados complexos. Não foi adotada nenhuma alteração baseada nele.
-5. Ainda faltam vetores de saída MATLAB de referência, a tolerância de
-   equivalência, as incertezas experimentais e a decisão final entre 30 e 50
+5. Ainda faltam as incertezas experimentais e a decisão final entre 30 e 50
    seeds.

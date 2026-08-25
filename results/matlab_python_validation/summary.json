@@ -1,0 +1,8 @@
+{
+  "max_abs_error_T": 5.5220263365470826e-30,
+  "max_rel_error_T": 1.6717503026056207e-14,
+  "max_abs_error_R": 1.3805065841367707e-30,
+  "max_rel_error_R": 3.644239657078057e-15,
+  "max_intermediate_abs_error": 8.881784197001252e-16,
+  "max_intermediate_frobenius_error": 1.0878030299442186e-15
+}
