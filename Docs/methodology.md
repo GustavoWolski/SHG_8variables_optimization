@@ -396,9 +396,9 @@ A comparação principal deverá incluir:
 - Particle Swarm Optimization (PSO);
 - CMA-ES.
 
-Estado no checkpoint de 25 de agosto de 2026: Random Search e Differential
-Evolution estão implementados e testados. A próxima implementação é Genetic
-Algorithm, seguida de PSO e CMA-ES.
+Estado no checkpoint de 25 de agosto de 2026: Random Search, Differential
+Evolution e Genetic Algorithm estão implementados e testados. A próxima
+implementação é PSO, seguida de CMA-ES.
 
 ---
 

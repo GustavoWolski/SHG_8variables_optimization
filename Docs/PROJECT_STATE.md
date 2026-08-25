@@ -47,7 +47,7 @@ penalização de pico do ajuste MATLAB legado não pertence à análise principa
 
 - src/physics/: fresnel.py, glass.py, transfer_matrix.py e simulator.py.
 - src/optimization/: constraints.py, objective.py, parameterization.py,
-  random_search.py e differential_evolution.py.
+  random_search.py, differential_evolution.py e genetic_algorithm.py.
 - src/experiments/data.py: dados experimentais oficiais.
 - scripts/: validação MATLAB/Python, benchmark e runners dos baselines.
 - tests/: testes unitários e regressão; results/: artefatos reprodutíveis.
@@ -126,12 +126,37 @@ Melhor p = [9.540644916150043, 19.99999983369976, 2.567103143029925,
 0.3818429946001101. Tempo total das cinco seeds: 113.437136 s. Artefatos:
 results/differential_evolution_baseline/.
 
+### Genetic Algorithm
+
+Status: implementado e testado. Implementação própria real-coded com NumPy:
+população 100, torneio 3, SBX (0.9, eta 15), mutação polinomial (1/8 por
+gene, eta 20), elitismo 1, inicialização uniforme e clipping em z. Cinco
+seeds (1 a 5), 50000 avaliações físicas por seed e 250000 no total.
+
+    seed 1: 0.3887575468305548
+    seed 2: 0.3838408040675216
+    seed 3: 0.4148273935319119
+    seed 4: 0.4180227137750425
+    seed 5: 0.3855212537352614
+
+    melhor J = 0.3838408040675216
+    mediana J = 0.3887575468305548
+    pior J = 0.4180227137750425
+    melhor seed = 2
+
+Melhor p = [9.52877737115147, 19.99999638111071, 2.529927342995089,
+2.529933579076557, 1.500000030869841, 1.027925056760741,
+3.086736962547977, 0.868587020336933]. Para ela, J_T =
+0.05681867610718783, J_R = 0.3270221279603338 e J =
+0.3838408040675216. Tempo total: 116.029422 s. Artefatos:
+results/genetic_algorithm_baseline/.
+
 ## 11. Resultados atuais
 
-Sob o mesmo orçamento, a mediana de Random Search foi 0.6852560724860886 e a
-de DE foi 0.3818430194775517. Descritivamente, DE terminou com menor erro e
-menor dispersão nas cinco seeds. Não houve inferência estatística formal e
-cinco seeds não sustentam alegação de superioridade estatística.
+Sob o mesmo orçamento, as medianas foram 0.6852560724860886 (Random Search),
+0.3818430194775517 (DE) e 0.3887575468305548 (GA). Esta é uma comparação
+descritiva das cinco seeds; não houve inferência estatística formal nem
+alegação de superioridade estatística.
 
 Ponto de atenção: a melhor solução DE está próxima de d2_nm ≈ 20,
 re_n3_w ≈ 1.5 e n2_w ≈ n2_2w. Isso não deve ser interpretado ainda como
@@ -141,10 +166,11 @@ com o orientador.
 
 ## 12. Estado dos testes
 
-    pytest: 97 passed
+    pytest: 120 passed
 
 A suíte cobre Fresnel, vidro, simulador, regressão MATLAB/Octave, constraints,
-objective, parameterization, Random Search e Differential Evolution.
+objective, parameterization, Random Search, Differential Evolution e Genetic
+Algorithm.
 
 ## 13. Decisões que NÃO devem ser alteradas sem discussão
 
@@ -164,8 +190,8 @@ objective, parameterization, Random Search e Differential Evolution.
 
 ## 14. Próximos passos
 
-1. Implementar Genetic Algorithm no mesmo espaço z e com budget físico exato.
-2. Implementar PSO e CMA-ES sob as mesmas regras.
+1. Implementar PSO no mesmo espaço z e com budget físico exato.
+2. Implementar CMA-ES sob as mesmas regras.
 3. Executar experimento piloto comparativo, decidir budget final e executar
    30 ou 50 seeds.
 4. Só então conduzir análise estatística, estabilidade, identificabilidade,
@@ -173,7 +199,8 @@ objective, parameterization, Random Search e Differential Evolution.
 
 ## 15. Ponto exato de retomada
 
-O checkpoint encerra após DE validado, seus testes e o baseline de cinco
-seeds. O próximo trabalho de implementação é Genetic Algorithm; não iniciar
+O checkpoint encerra após GA validado, seus testes e o baseline de cinco
+seeds. O próximo trabalho de implementação é Particle Swarm Optimization;
+não iniciar
 experimentos comparativos finais nem análises científicas antes de todos os
 algoritmos planejados e da decisão do budget final.

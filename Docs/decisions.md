@@ -22,7 +22,7 @@ resolvido silenciosamente.
 Foram criados os pacotes, a configuração de ambiente, pytest, documentação,
 os auxiliares `rij`, `tij` e `nlimeglass`, e o núcleo físico do simulador de
 quatro camadas. A função objetivo e os baselines Random Search e Differential
-Evolution estão separados da física; GA, PSO e CMA-ES ainda não existem. As constraints oficiais
+ Evolution e Genetic Algorithm estão separados da física; PSO e CMA-ES ainda não existem. As constraints oficiais
 pertencem exclusivamente a `optimization/constraints.py`; o simulador
 permanece sem regras de otimização.
 
@@ -296,6 +296,39 @@ estatístico final: cinco seeds não autorizam inferência de superioridade
 estatística. O budget final e a escolha entre 30 e 50 seeds continuam
 abertos. O estado consolidado para retomada está em docs/PROJECT_STATE.md;
 ele deve ser atualizado após cada checkpoint experimental significativo.
+
+## D-017 — Genetic Algorithm como terceiro baseline global
+
+optimization/genetic_algorithm.py é uma implementação própria e auditável,
+real-coded e dependente apenas de NumPy. Ela foi escolhida em vez de um novo
+framework para controlar diretamente cada avaliação física, inclusive a
+população inicial e a última geração parcial. O GA opera somente em z, chama
+to_physical uma vez para cada descendente novo e usa ObjectiveEvaluator como
+única contagem oficial. Não há cache global, repair físico, nem uso de
+soluções de Random Search ou DE na inicialização.
+
+A configuração fixada antes do baseline foi: população 100, inicialização
+uniforme em z, seleção por torneio de tamanho 3, SBX com probabilidade 0.9 e
+eta 15, mutação polinomial com probabilidade 1/8 por gene e eta 20, elitismo
+de um indivíduo e clipping em z. Elites carregam o resultado físico já
+calculado, portanto não são reavaliados. O clipping usa margem normalizada de
+1e-8 nas duas faces do cubo apenas para impedir que arredondamento float64
+colapse os vértices das desigualdades estritas da parametrização; isso não
+altera bounds, constraints nem aplica repair no espaço físico.
+
+O desempate mantém a primeira solução encontrada. Todas as operações
+aleatórias usam o único np.random.default_rng(seed) da execução. Para seed 1
+e 1.000 avaliações, o smoke terminou com n_evaluations igual a 1.000 e
+J = 0.705108055879239. No baseline de cinco seeds, cada uma com 50.000
+avaliações, os J finais foram 0.3887575468305548, 0.3838408040675216,
+0.4148273935319119, 0.4180227137750425 e 0.3855212537352614. O melhor foi a
+seed 2, com J = 0.3838408040675216, J_T = 0.05681867610718783 e
+J_R = 0.3270221279603338. Artefatos estão em
+results/genetic_algorithm_baseline/.
+
+Assim como os demais baselines, as cinco seeds permitem somente comparação
+descritiva por número de avaliações físicas; nenhuma conclusão de
+superioridade estatística foi adotada.
 
 ## Ambiguidades abertas
 

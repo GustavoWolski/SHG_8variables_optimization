@@ -36,7 +36,7 @@ O primeiro port Python deve reproduzir numericamente o MATLAB. A ordem é:
 7. somente então, algoritmos de otimização.
 
 Não implementar algoritmos além da etapa explicitamente autorizada. Random
-Search e Differential Evolution já existem; GA, PSO, CMA-ES, busca local,
+Search, Differential Evolution e Genetic Algorithm já existem; PSO, CMA-ES, busca local,
 surrogates, redes neurais, Bayesian Optimization, NSGA-II, RL ou PINNs
 dependem de autorização explícita.
 

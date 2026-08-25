@@ -42,6 +42,13 @@ from optimization.differential_evolution import (
     DifferentialEvolutionResult,
     differential_evolution,
 )
+from optimization.genetic_algorithm import (
+    DEFAULT_CONFIGURATION as DEFAULT_GA_CONFIGURATION,
+    GeneticAlgorithmConfiguration,
+    GeneticAlgorithmConvergenceRecord,
+    GeneticAlgorithmResult,
+    genetic_algorithm,
+)
 
 __all__ = [
     "LOWER_BOUNDS",
@@ -80,4 +87,9 @@ __all__ = [
     "DifferentialEvolutionConvergenceRecord",
     "DifferentialEvolutionResult",
     "differential_evolution",
+    "DEFAULT_GA_CONFIGURATION",
+    "GeneticAlgorithmConfiguration",
+    "GeneticAlgorithmConvergenceRecord",
+    "GeneticAlgorithmResult",
+    "genetic_algorithm",
 ]

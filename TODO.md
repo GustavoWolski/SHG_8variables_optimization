@@ -32,8 +32,8 @@
 - [x] Random Search no espaço normalizado, com seed e budget por avaliações físicas.
 - [x] Differential Evolution no espaço normalizado, com seed, configuração documentada e budget exato por avaliações físicas.
 - [x] Executar e salvar os baselines preliminares de Random Search e DE com 5 seeds e 50.000 avaliações físicas por seed.
-- [ ] Genetic Algorithm (próxima implementação).
-- [ ] Particle Swarm Optimization.
+- [x] Genetic Algorithm real-coded no espaço normalizado, com budget físico exato e baseline de 5 seeds.
+- [ ] Particle Swarm Optimization (próxima implementação).
 - [ ] CMA-ES.
 - [ ] Runner comum com seeds, orçamento por avaliações e convergência.
 
