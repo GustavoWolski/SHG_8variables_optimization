@@ -16,6 +16,14 @@ from optimization.constraints import (
     validate_parameter_vector,
     validate_physical_parameters,
 )
+from optimization.objective import (
+    InvalidParameterError,
+    ObjectiveEvaluator,
+    ObjectiveResult,
+    calculate_error_components,
+    evaluate,
+    objective,
+)
 
 __all__ = [
     "LOWER_BOUNDS",
@@ -32,4 +40,10 @@ __all__ = [
     "upper_bounds",
     "validate_parameter_vector",
     "validate_physical_parameters",
+    "InvalidParameterError",
+    "ObjectiveEvaluator",
+    "ObjectiveResult",
+    "calculate_error_components",
+    "evaluate",
+    "objective",
 ]

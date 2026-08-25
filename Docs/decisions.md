@@ -167,6 +167,39 @@ definidos uma única vez antes do primeiro algoritmo. Rejection, repair e
 penalty não serão usados como estratégia principal; qualquer uso auxiliar
 deverá ser idêntico e contabilizado para todos os algoritmos.
 
+## D-011 — Função objetivo oficial e contagem de avaliações
+
+`optimization/objective.py` é a única camada entre futuros algoritmos e o
+simulador. Os dados experimentais oficiais residem uma única vez em
+`experiments/data.py`. Para um vetor fisicamente válido, a função usa
+literalmente `J = J_T + J_R`, em que cada componente é a **soma** dos erros
+quadráticos normalizados pelo máximo experimental correspondente. Não há
+média dos pontos e não há penalização de pico do MATLAB legado.
+
+Um candidato inválido gera `InvalidParameterError`, com as violações de
+`constraints.py`, antes de qualquer chamada ao simulador. A API não converte
+essa condição em uma penalização numérica artificial: a reparametrização
+compartilhada planejada deve evitar candidatos inválidos nos experimentos.
+
+`ObjectiveEvaluator` mantém `n_evaluations` sem estado global. Uma avaliação
+é incrementada imediatamente antes de uma chamada efetiva ao simulador;
+rejeições durante a validação não contam como avaliações físicas.
+
+## D-012 — Baseline serial de desempenho da função objetivo
+
+O benchmark reprodutível em `scripts/benchmark_objective.py` usou seed
+`20260824`, 50 avaliações válidas de warm-up (excluídas das estatísticas) e
+lotes de 100, 1.000 e 10.000 vetores válidos variados. No lote principal de
+10.000, a média foi `0.000419043 s` por avaliação, a mediana
+`0.000415600 s` e a taxa `2385.192` avaliações/s. O contador de cada lote
+coincidiu exatamente com o número de chamadas físicas executadas.
+
+Esses resultados são um baseline estritamente serial em CPython/Windows, sem
+paralelização, GPU, cache ou alterações da física. As projeções para budgets,
+5 algoritmos e 30/50 seeds estão registradas em `results/benchmark_objective.md`;
+elas excluem overhead de algoritmos, I/O e startup. O benchmark não escolhe o
+budget definitivo.
+
 ## Ambiguidades abertas
 
 1. Os caminhos foram normalizados para `docs/methodology.md`,

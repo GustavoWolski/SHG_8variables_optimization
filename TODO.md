@@ -21,12 +21,12 @@
 
 ## Formulação inversa
 
-- [ ] Implementar dados experimentais e vetor de parâmetros em `experiments/config.py`.
-- [ ] Implementar somente `J = J_T + J_R`, sem penalidade de pico.
+- [x] Centralizar os dados experimentais oficiais em `experiments/data.py`.
+- [x] Implementar somente `J = J_T + J_R`, sem penalidade de pico.
 - [x] Implementar e testar limites e dispersão normal em `optimization/constraints.py`.
-- [ ] Garantir que cada avaliação retorne `J`, `J_T`, `J_R`, `p`, `T` e `R`.
+- [x] Garantir que cada avaliação detalhada retorne `J`, `J_T`, `J_R`, `p`, `T` e `R`.
 
-## Otimização — bloqueada até a função objetivo compartilhada
+## Otimização — bloqueada até a reparametrização compartilhada
 
 - [ ] Random Search.
 - [ ] Differential Evolution.
@@ -37,7 +37,8 @@
 
 ## Experimentos e análise futuros
 
-- [ ] Medir o custo de uma avaliação e definir orçamento comum.
+- [x] Medir o custo serial de uma avaliação completa da função objetivo.
+- [ ] Definir orçamento comum de avaliações a partir do baseline e dos custos dos algoritmos.
 - [ ] Executar 30 seeds (avaliar 50 quando viável).
 - [ ] Salvar resultados reprodutíveis em `results/`.
 - [ ] Produzir estatísticas, gráficos e análise de identificabilidade.
