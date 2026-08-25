@@ -7,9 +7,9 @@ port. Ele não substitui nem modifica a formulação física.
 
 Para qualquer decisão física, a precedência é:
 
-1. `Docs/00 - Research Notebook/methodology.md`;
-2. `Docs/02 - Equacões/Equações.md`;
-3. `Legacy_matlab/`.
+1. `docs/methodology.md`;
+2. `docs/equations.md`;
+3. `legacy_matlab/`.
 
 Na prática, os arquivos MATLAB resolvem detalhes executáveis que a
 documentação marcava como pendentes, por exemplo as expressões completas de
@@ -19,10 +19,11 @@ resolvido silenciosamente.
 
 ## D-002 — Escopo desta etapa
 
-Foram criados apenas pacotes vazios, configuração de ambiente, pytest e
-documentação. Não há código Python do simulador, função objetivo, constraints
-ou otimizadores. Portanto, nenhum resultado numérico Python deve ser
-interpretado como validação do modelo.
+Foram criados os pacotes, a configuração de ambiente, pytest, documentação,
+os auxiliares `rij`, `tij` e `nlimeglass`, e o núcleo físico do simulador de
+quatro camadas. Não há função objetivo, constraints ou otimizadores. Os
+testes atuais validam apenas sanidade, formato e determinismo do simulador;
+não constituem equivalência numérica MATLAB × Python.
 
 ## D-003 — Inventário do modelo MATLAB
 
@@ -79,13 +80,60 @@ Os pacotes são mantidos exatamente como `physics`, `optimization`,
 dependência opcional de desenvolvimento. A configuração adiciona `src/` ao
 path de teste e restringe a descoberta a `tests/`.
 
+## D-006 — Port fiel dos auxiliares MATLAB
+
+`src/physics/fresnel.py` usa os valores literais
+`eps0 = 8.8541878176e-12` e `c = 3e8`, com `Z0 = 1/(eps0*c)`, uma única vez
+no módulo compartilhado por `rij` e `tij`. As duas funções preservam a
+aritmética complexa da expressão MATLAB sem qualquer correção física.
+
+`src/physics/glass.py` mantém a conversão de metros para micrômetros por
+`lambda / 1e-6` antes da expressão de soda-lime glass. A operação é
+elementwise para entradas NumPy por consequência direta da expressão, sem
+ramificações ou aproximações adicionais.
+
+## D-007 — Núcleo do simulador de quatro camadas
+
+`src/physics/transfer_matrix.py` representa literalmente as matrizes de
+interface `(1/t)[[1,r],[r,1]]` e de propagação diagonal. O simulador mantém
+vetores-coluna 2×1 e a ordem de multiplicação MATLAB com `@` em
+`src/physics/simulator.py`.
+
+O laço explícito sobre `Md3` preserva `d3 = (dnm - p[1]) * 1e-9`. As fontes
+`2k` e `0k` são calculadas separadamente; o termo cruzado permanece sem fator
+2. As intensidades usam literalmente `real(E * conj(E))`, e a normalização
+usa integralmente a referência MoS2 do MATLAB. Nenhuma dessas escolhas foi
+reinterpretada fisicamente.
+
+O diagnóstico é opcional e permitido para uma única espessura; ele expõe
+fases, matrizes, campos e intensidades para o próximo checkpoint MATLAB ×
+Python. Não há declaração de equivalência completa até essa comparação.
+
+## D-008 — Infraestrutura de validação MATLAB × Python
+
+Foram extraídas literalmente do arquivo MATLAB principal as funções globais
+`legacy_matlab/shg_4layers.m` e `legacy_matlab/shg_mos2_ratios.m`, para que
+`legacy_matlab/export_reference_cases.m` possa chamar a própria implementação
+MATLAB sem reescrever a física. A única extensão é uma quinta saída opcional
+de `shg_4layers`, usada exclusivamente para expor variáveis intermediárias já
+calculadas; as quatro saídas físicas e suas expressões não foram alteradas.
+
+O exportador cobre `p0` e dois vetores adicionais fisicamente válidos, as dez
+espessuras experimentais, e todos os intermediários do ponto de 150 nm. O
+validador `scripts/validate_matlab_python.py` produz comparações de `T`, `R`,
+`I_4`, `I_1`, `IMoS24`, `IMoS21`, além de erro máximo absoluto e norma de
+Frobenius por intermediário.
+
+Neste ambiente não foram encontrados os executáveis `matlab`, `octave` ou
+`octave-cli`. Portanto, nenhum CSV de referência foi fabricado, nenhuma
+tolerância foi escolhida e a equivalência numérica ainda está pendente de uma
+execução real do exportador.
+
 ## Ambiguidades abertas
 
-1. A documentação pede os caminhos normalizados `docs/methodology.md`,
-   `docs/equations.md` e `legacy_matlab/`, mas os arquivos preservados estão
-   organizados como `Docs/...` e `Legacy_matlab/`. Em Windows, a diferença de
-   maiúsculas não altera o acesso, mas a estrutura interna ainda diverge;
-   nenhuma movimentação ou duplicação de fonte foi feita nesta etapa.
+1. Os caminhos foram normalizados para `docs/methodology.md`,
+   `docs/equations.md` e `legacy_matlab/`. Os materiais suplementares foram
+   preservados sob `docs/`; nenhuma equação ou arquivo MATLAB foi alterado.
 2. A equação de documentação para a fonte de SHG é conceitual; o MATLAB é
    específico quanto aos termos `2k` e `0k`. O port deve seguir o MATLAB
    literalmente e validar contra ele antes de qualquer interpretação física.

@@ -4,9 +4,9 @@
 
 Antes de modificar a física, leia nesta ordem:
 
-1. `Docs/00 - Research Notebook/methodology.md`;
-2. `Docs/02 - Equacões/Equações.md`;
-3. todos os arquivos em `Legacy_matlab/`.
+1. `docs/methodology.md`;
+2. `docs/equations.md`;
+3. todos os arquivos em `legacy_matlab/`.
 
 O MATLAB/Octave é a referência física e numérica. Não alterar, simplificar
 ou “melhorar” equações, convenções de sinais, unidades ou normalizações sem

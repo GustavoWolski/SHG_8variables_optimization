@@ -11,13 +11,13 @@ ou de algoritmos de otimização.
 
 ## Fontes de referência
 
-1. [Metodologia](<Docs/00 - Research Notebook/methodology.md>)
-2. [Equações](<Docs/02 - Equacões/Equações.md>)
-3. [MATLAB original](Legacy_matlab/)
+1. [Metodologia](docs/methodology.md)
+2. [Equações](docs/equations.md)
+3. [MATLAB original](legacy_matlab/)
 
 As regras operacionais resumidas estão em [AGENTS.md](AGENTS.md), e as
 decisões e ambiguidades desta preparação estão em
-[Docs/decisions.md](Docs/decisions.md).
+[docs/decisions.md](docs/decisions.md).
 
 ## Estrutura inicial
 

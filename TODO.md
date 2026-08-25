@@ -8,14 +8,15 @@
 
 ## Port físico e validação (ordem obrigatória)
 
-- [ ] Portar fielmente `rij.m` para `src/physics/fresnel.py`.
-- [ ] Portar fielmente `tij.m` para `src/physics/fresnel.py`.
-- [ ] Portar fielmente `nlimeglass.m` para `src/physics/glass.py`.
-- [ ] Criar testes unitários para essas três funções com entradas reais e complexas.
-- [ ] Extrair/definir vetores de referência de MATLAB para testes de regressão.
-- [ ] Portar as matrizes de interface e propagação em `transfer_matrix.py`.
-- [ ] Portar `shg_4layers` e `shg_mos2_ratios` em `simulator.py`, sem alterações de fórmula.
-- [ ] Comparar `T`, `R`, `J_T`, `J_R` e `J` entre MATLAB/Octave e Python.
+- [x] Portar fielmente `rij.m` para `src/physics/fresnel.py`.
+- [x] Portar fielmente `tij.m` para `src/physics/fresnel.py`.
+- [x] Portar fielmente `nlimeglass.m` para `src/physics/glass.py`.
+- [x] Criar testes unitários para essas três funções com entradas reais e complexas.
+- [ ] Executar `legacy_matlab/export_reference_cases.m` em MATLAB/Octave para gerar referências reais.
+- [ ] Versionar as referências confirmadas em `tests/reference/` e criar o teste de regressão MATLAB × Python.
+- [x] Portar as matrizes de interface e propagação em `transfer_matrix.py`.
+- [x] Portar `shg_4layers` e `shg_mos2_ratios` em `simulator.py`, sem alterações de fórmula.
+- [ ] Executar `scripts/validate_matlab_python.py` para comparar `T`, `R` e intermediários entre MATLAB/Octave e Python.
 - [ ] Definir e justificar a tolerância numérica de equivalência.
 
 ## Formulação inversa
