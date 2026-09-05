@@ -10,7 +10,7 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.optimize._differentialevolution import DifferentialEvolutionSolver
 
-from optimization.objective import ObjectiveEvaluator, ObjectiveResult
+from optimization.objective import DEFAULT_OBJECTIVE_WEIGHTS, ObjectiveEvaluator, ObjectiveResult, ObjectiveWeights
 from optimization.parameterization import NORMALIZED_PARAMETER_COUNT, to_physical
 
 
@@ -41,6 +41,8 @@ class DifferentialEvolutionConvergenceRecord:
 
     evaluation: int
     best_J: float
+    best_J_unweighted: float
+    best_J_weighted: float
     best_J_T: float
     best_J_R: float
 
@@ -55,6 +57,8 @@ class DifferentialEvolutionResult:
     n_evaluations: int
     runtime_s: float
     best_J: float
+    best_J_unweighted: float
+    best_J_weighted: float
     best_J_T: float
     best_J_R: float
     best_z: NDArray[np.float64]
@@ -63,6 +67,7 @@ class DifferentialEvolutionResult:
     R_theoretical: NDArray[np.float64]
     valid_physics: bool
     convergence_history: tuple[DifferentialEvolutionConvergenceRecord, ...]
+    weights: ObjectiveWeights
     configuration: DifferentialEvolutionConfiguration
     scipy_maxfun: int
     scipy_maxiter: int
@@ -110,19 +115,21 @@ class _TrackedNormalizedObjective:
     def __call__(self, normalized: NDArray[np.float64]) -> float:
         physical = to_physical(normalized)
         current = self.evaluator.evaluate(physical)
-        if self.best_evaluation is None or current.J < self.best_evaluation.J:
+        if self.best_evaluation is None or current.J_weighted < self.best_evaluation.J_weighted:
             self.best_z = np.asarray(normalized, dtype=np.float64).copy()
             self.best_evaluation = current
         assert self.best_evaluation is not None
         self.history.append(
             DifferentialEvolutionConvergenceRecord(
                 evaluation=self.evaluator.n_evaluations,
-                best_J=self.best_evaluation.J,
+                best_J=self.best_evaluation.J_weighted,
+                best_J_unweighted=self.best_evaluation.J,
+                best_J_weighted=self.best_evaluation.J_weighted,
                 best_J_T=self.best_evaluation.J_T,
                 best_J_R=self.best_evaluation.J_R,
             )
         )
-        return current.J
+        return current.J_weighted
 
 
 def differential_evolution(
@@ -130,6 +137,7 @@ def differential_evolution(
     budget: int,
     seed: int,
     configuration: DifferentialEvolutionConfiguration = DEFAULT_CONFIGURATION,
+    weights: ObjectiveWeights = DEFAULT_OBJECTIVE_WEIGHTS,
 ) -> DifferentialEvolutionResult:
     """Run pure DE in ``z ∈ [0, 1]^8`` with an exact physical-evaluation budget.
 
@@ -144,7 +152,7 @@ def differential_evolution(
 
     evaluation_budget = _validate_budget(budget)
     _validate_configuration(configuration)
-    evaluator = ObjectiveEvaluator()
+    evaluator = ObjectiveEvaluator(weights=weights)
     tracked_objective = _TrackedNormalizedObjective(evaluator)
     solver = DifferentialEvolutionSolver(
         tracked_objective,
@@ -191,7 +199,9 @@ def differential_evolution(
         budget=evaluation_budget,
         n_evaluations=evaluator.n_evaluations,
         runtime_s=runtime_s,
-        best_J=best.J,
+        best_J=best.J_weighted,
+        best_J_unweighted=best.J,
+        best_J_weighted=best.J_weighted,
         best_J_T=best.J_T,
         best_J_R=best.J_R,
         best_z=tracked_objective.best_z.copy(),
@@ -200,6 +210,7 @@ def differential_evolution(
         R_theoretical=best.R_theoretical.copy(),
         valid_physics=best.valid_physics,
         convergence_history=tuple(tracked_objective.history),
+        weights=weights,
         configuration=configuration,
         scipy_maxfun=evaluation_budget,
         scipy_maxiter=evaluation_budget,

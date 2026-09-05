@@ -54,9 +54,11 @@ dependem de autorização explícita.
 
 - `-10 <= log10_chi <= 10`;
 - `0 <= d2_nm <= 20`;
-- `1.5 <=` partes reais dos índices `<= 6`;
+- `1 <= n2_w, n2_2w <= 6`;
+- `1.5 <= re_n3_w, re_n3_2w <= 6`;
 - `0 <=` partes imaginárias `<= 4`;
-- dispersão normal estrita: `n2_w < n2_2w` e
+- `n2_w` e `n2_2w` são independentes, sem ordenação;
+- dispersão normal estrita somente na camada 3:
   `re_n3_w < re_n3_2w`.
 
 ## Objetivo e experimentos futuros

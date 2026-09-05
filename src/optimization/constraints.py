@@ -36,8 +36,8 @@ class ConstraintViolation:
 PARAMETER_DEFINITIONS: Final[tuple[ParameterDefinition, ...]] = (
     ParameterDefinition("log10_chi", -10.0, 10.0, "log10(chi)"),
     ParameterDefinition("d2_nm", 0.0, 20.0, "nm"),
-    ParameterDefinition("n2_w", 1.5, 6.0, "dimensionless"),
-    ParameterDefinition("n2_2w", 1.5, 6.0, "dimensionless"),
+    ParameterDefinition("n2_w", 1.0, 6.0, "dimensionless"),
+    ParameterDefinition("n2_2w", 1.0, 6.0, "dimensionless"),
     ParameterDefinition("re_n3_w", 1.5, 6.0, "dimensionless"),
     ParameterDefinition("im_n3_w", 0.0, 4.0, "dimensionless"),
     ParameterDefinition("re_n3_2w", 1.5, 6.0, "dimensionless"),
@@ -123,8 +123,9 @@ def validate_parameter_vector(p: ArrayLike) -> NDArray[np.float64]:
 def constraint_violations(p: ArrayLike) -> tuple[ConstraintViolation, ...]:
     """Return every structural or physical reason that ``p`` is invalid.
 
-    Box bounds are inclusive. The two normal-dispersion inequalities are
-    strict: ``n2_w < n2_2w`` and ``re_n3_w < re_n3_2w``.
+    Box bounds are inclusive. Only the layer-3 real-index normal-dispersion
+    inequality is strict: ``re_n3_w < re_n3_2w``. The two oxide indices are
+    independent coordinates.
     """
 
     values, violations = _coerce_parameter_vector(p)
@@ -151,14 +152,6 @@ def constraint_violations(p: ArrayLike) -> tuple[ConstraintViolation, ...]:
                 )
             )
 
-    if not values[2] < values[3]:
-        reasons.append(
-            ConstraintViolation(
-                "normal_dispersion_n2",
-                f"n2_w={values[2]!r} must be strictly smaller than n2_2w={values[3]!r}.",
-                ("n2_w", "n2_2w"),
-            )
-        )
     if not values[4] < values[6]:
         reasons.append(
             ConstraintViolation(

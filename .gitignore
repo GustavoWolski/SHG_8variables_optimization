@@ -6,4 +6,5 @@ build/
 dist/
 *.egg-info/
 **/.obsidian/workspace.json
+results/
 *.csv

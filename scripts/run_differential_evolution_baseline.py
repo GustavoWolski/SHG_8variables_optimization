@@ -12,10 +12,6 @@ from pathlib import Path
 from time import perf_counter
 from typing import Sequence
 
-import matplotlib
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import numpy as np
 import scipy
 
@@ -30,7 +26,6 @@ from optimization.differential_evolution import (
     DifferentialEvolutionResult,
     differential_evolution,
 )
-from experiments.data import D_NM, R_EXP, T_EXP
 
 
 DEFAULT_SEEDS = (1, 2, 3, 4, 5)
@@ -136,101 +131,6 @@ def _write_parameters(path: Path, results: Sequence[DifferentialEvolutionResult]
             writer.writerow([result.seed, *[f"{value:.16g}" for value in result.best_p]])
 
 
-def _history_matrix(results: Sequence[DifferentialEvolutionResult]) -> np.ndarray:
-    return np.asarray(
-        [[record.best_J for record in result.convergence_history] for result in results],
-        dtype=float,
-    )
-
-
-def _plot_convergence(path: Path, results: Sequence[DifferentialEvolutionResult]) -> None:
-    histories = _history_matrix(results)
-    evaluations = np.arange(1, histories.shape[1] + 1)
-    figure, axis = plt.subplots(figsize=(10, 6))
-    for result, history in zip(results, histories, strict=True):
-        axis.plot(evaluations, history, linewidth=0.8, alpha=0.7, label=f"Seed {result.seed}")
-
-    median = np.median(histories, axis=0)
-    q1, q3 = np.percentile(histories, [25, 75], axis=0)
-    axis.plot(evaluations, median, color="black", linewidth=2.0, label="Mediana")
-    axis.fill_between(evaluations, q1, q3, color="black", alpha=0.15, label="IQR")
-    axis.set_xlabel("Avaliações da função objetivo")
-    axis.set_ylabel("Melhor J até a avaliação")
-    axis.set_title("Differential Evolution: convergência por avaliação")
-    axis.grid(True, alpha=0.3)
-    axis.legend()
-    figure.tight_layout()
-    figure.savefig(path, dpi=160)
-    plt.close(figure)
-
-
-def _plot_best_fit(path: Path, best: DifferentialEvolutionResult) -> None:
-    figure, (axis_t, axis_r) = plt.subplots(1, 2, figsize=(11, 4.5), sharex=True)
-    axis_t.plot(D_NM, T_EXP, "o", label="T experimental")
-    axis_t.plot(D_NM, best.T_theoretical, "-", label="T teórico")
-    axis_t.set_title("Transmissão")
-    axis_t.set_xlabel("Espessura experimental (nm)")
-    axis_t.set_ylabel("T")
-    axis_t.grid(True, alpha=0.3)
-    axis_t.legend()
-
-    axis_r.plot(D_NM, R_EXP, "o", label="R experimental")
-    axis_r.plot(D_NM, best.R_theoretical, "-", label="R teórico")
-    axis_r.set_title("Reflexão")
-    axis_r.set_xlabel("Espessura experimental (nm)")
-    axis_r.set_ylabel("R")
-    axis_r.grid(True, alpha=0.3)
-    axis_r.legend()
-    figure.suptitle(f"Melhor ajuste DE — seed {best.seed}, J={best.best_J:.6g}")
-    figure.tight_layout()
-    figure.savefig(path, dpi=160)
-    plt.close(figure)
-
-
-def _read_random_history(path: Path) -> dict[int, np.ndarray] | None:
-    if not path.exists():
-        return None
-    histories: dict[int, list[float]] = {}
-    with path.open(newline="", encoding="utf-8") as handle:
-        for row in csv.DictReader(handle):
-            histories.setdefault(int(row["seed"]), []).append(float(row["best_J"]))
-    return {seed: np.asarray(history, dtype=float) for seed, history in histories.items()}
-
-
-def _plot_comparison(
-    path: Path,
-    results: Sequence[DifferentialEvolutionResult],
-    random_history_path: Path,
-) -> bool:
-    random_histories = _read_random_history(random_history_path)
-    if random_histories is None:
-        return False
-
-    de = _history_matrix(results)
-    random = np.asarray(list(random_histories.values()), dtype=float)
-    count = min(de.shape[1], random.shape[1])
-    evaluations = np.arange(1, count + 1)
-
-    figure, axis = plt.subplots(figsize=(10, 6))
-    for label, histories, color in (
-        ("Differential Evolution", de[:, :count], "tab:blue"),
-        ("Random Search", random[:, :count], "tab:orange"),
-    ):
-        median = np.median(histories, axis=0)
-        q1, q3 = np.percentile(histories, [25, 75], axis=0)
-        axis.plot(evaluations, median, color=color, linewidth=2, label=f"{label}: mediana")
-        axis.fill_between(evaluations, q1, q3, color=color, alpha=0.17, label=f"{label}: IQR")
-    axis.set_xlabel("Avaliações da função objetivo")
-    axis.set_ylabel("Melhor J até a avaliação")
-    axis.set_title("Comparação descritiva: DE e Random Search")
-    axis.grid(True, alpha=0.3)
-    axis.legend()
-    figure.tight_layout()
-    figure.savefig(path, dpi=160)
-    plt.close(figure)
-    return True
-
-
 def _format_vector(values: np.ndarray) -> str:
     return ", ".join(f"{value:.16g}" for value in values)
 
@@ -239,20 +139,11 @@ def _write_report(
     path: Path,
     results: Sequence[DifferentialEvolutionResult],
     total_runtime_seconds: float,
-    random_reference_dir: Path,
-    comparison_written: bool,
 ) -> None:
     best = min(results, key=lambda result: result.best_J)
     j_summary = _summary([result.best_J for result in results])
     jt_summary = _summary([result.best_J_T for result in results])
     jr_summary = _summary([result.best_J_R for result in results])
-    random_runs = random_reference_dir / "runs.csv"
-    random_note = (
-        "O gráfico de mediana/IQR foi criado a partir do histórico do Random Search."
-        if comparison_written
-        else "A referência de Random Search não estava disponível; nenhum gráfico comparativo foi criado."
-    )
-
     lines = [
         "# Baseline — Differential Evolution",
         "",
@@ -311,8 +202,7 @@ def _write_report(
         "",
         "## Observações descritivas",
         "",
-        f"- {random_note}",
-        f"- Referência usada para comparação: {random_runs}.",
+        "- As figuras comparativas são regeneradas exclusivamente por `scripts/regenerate_benchmark_figures.py`.",
         "- As curvas registram o melhor J observado após cada avaliação física; não houve suavização.",
         "- Este baseline é descritivo. Ele não estabelece ainda uma conclusão de superioridade entre algoritmos.",
     ]
@@ -327,11 +217,6 @@ def parse_arguments() -> argparse.Namespace:
         "--output-dir",
         type=Path,
         default=ROOT / "results" / "differential_evolution_baseline",
-    )
-    parser.add_argument(
-        "--random-reference-dir",
-        type=Path,
-        default=ROOT / "results" / "random_search_baseline",
     )
     return parser.parse_args()
 
@@ -368,24 +253,16 @@ def main() -> None:
     _write_history(output_dir / "convergence_history.csv", results)
     _write_summary(output_dir / "summary.csv", results)
     _write_parameters(output_dir / "best_parameters.csv", results)
-    _plot_convergence(output_dir / "convergence.png", results)
-    _plot_best_fit(output_dir / "best_fit.png", best)
-    comparison_written = _plot_comparison(
-        output_dir / "de_vs_random_convergence.png",
-        results,
-        arguments.random_reference_dir / "convergence_history.csv",
-    )
     _write_report(
         output_dir / "report.md",
         results,
         total_runtime,
-        arguments.random_reference_dir,
-        comparison_written,
     )
 
     print(f"Resultados salvos em {output_dir}", flush=True)
     print(f"Melhor seed={best.seed}; p=[{_format_vector(best.best_p)}]", flush=True)
     print(f"Tempo total={total_runtime:.3f}s", flush=True)
+    print("Regenerate all standardized figures with scripts/regenerate_benchmark_figures.py", flush=True)
 
 
 if __name__ == "__main__":

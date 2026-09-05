@@ -1,8 +1,8 @@
 """Shared normalized-to-physical mapping for every future optimizer.
 
-The two dispersive index pairs are sampled uniformly over their feasible
-triangles, except for the explicitly documented floating-point separation
-``DELTA_N`` required by the strict physical inequalities.
+The oxide indices are independent uniform coordinates. Only the layer-3
+real-index pair is sampled over its feasible triangle, with the documented
+floating-point separation ``DELTA_N`` for its strict physical inequality.
 """
 
 from __future__ import annotations
@@ -16,6 +16,9 @@ from optimization.constraints import PARAMETER_COUNT, is_physically_valid, valid
 
 
 NORMALIZED_PARAMETER_COUNT: Final[int] = PARAMETER_COUNT
+OXIDE_INDEX_LOWER_BOUND: Final[float] = 1.0
+OXIDE_INDEX_UPPER_BOUND: Final[float] = 6.0
+# Backward-compatible name for the lower bound of the triangular layer-3 pair.
 INDEX_LOWER_BOUND: Final[float] = 1.5
 INDEX_UPPER_BOUND: Final[float] = 6.0
 # 64 ULP at the upper bound protects strict ordering through float64 arithmetic.
@@ -60,21 +63,21 @@ def _uniform_triangle_pair(first: float, second: float) -> tuple[float, float]:
 def to_physical(z: ArrayLike) -> NDArray[np.float64]:
     """Map ``z in [0, 1]^8`` deterministically to a physically valid vector ``p``.
 
-    ``z[2:4]`` and ``z[4:6]`` use the area-preserving square-to-triangle map
-    ``x = S * (1 - sqrt(z_a))`` and ``y = S * sqrt(z_a) * z_b``, where
-    ``S = 6 - 1.5 - DELTA_N``. Thus each pair satisfies
-    ``1.5 <= n_w`` and ``n_w + DELTA_N <= n_2w <= 6``.
+    The oxide coordinates are independent: ``n2_w = 1 + 5*z[2]`` and
+    ``n2_2w = 1 + 5*z[3]``. ``z[4:6]`` uses the area-preserving
+    square-to-triangle map ``x = S * (1 - sqrt(z_a))`` and
+    ``y = S * sqrt(z_a) * z_b``, where ``S = 6 - 1.5 - DELTA_N``. The
+    latter keeps only the layer-3 pair strictly ordered.
     """
 
     values = validate_normalized(z)
-    n2_w, n2_2w = _uniform_triangle_pair(values[2], values[3])
     re_n3_w, re_n3_2w = _uniform_triangle_pair(values[4], values[5])
     parameters = np.array(
         [
             -10.0 + 20.0 * values[0],
             20.0 * values[1],
-            n2_w,
-            n2_2w,
+            OXIDE_INDEX_LOWER_BOUND + (OXIDE_INDEX_UPPER_BOUND - OXIDE_INDEX_LOWER_BOUND) * values[2],
+            OXIDE_INDEX_LOWER_BOUND + (OXIDE_INDEX_UPPER_BOUND - OXIDE_INDEX_LOWER_BOUND) * values[3],
             re_n3_w,
             4.0 * values[6],
             re_n3_2w,
@@ -113,22 +116,24 @@ def _inverse_triangle_pair(lower_index: float, upper_index: float) -> tuple[floa
 def to_normalized(p: ArrayLike) -> NDArray[np.float64]:
     """Recover normalized coordinates for a vector produced by :func:`to_physical`.
 
-    The inverse is unique in the triangle interior. At the single vertex
-    ``n_w = 6 - DELTA_N, n_2w = 6``, the forward map collapses all values of
-    the second coordinate; this function returns its canonical value zero.
-    Physically valid vectors with a gap smaller than ``DELTA_N`` are outside
-    this deliberately trimmed normalized domain and raise ``ValueError``.
+    Oxide coordinates use the independent affine inverse. The layer-3
+    triangle inverse is unique in its interior; at the single vertex
+    ``n_w = 6 - DELTA_N, n_2w = 6``, it returns canonical second coordinate
+    zero. Physically valid layer-3 vectors with a gap smaller than ``DELTA_N``
+    are outside that deliberately trimmed normalized domain and raise
+    ``ValueError``.
     """
 
     parameters = validate_physical_parameters(p)
-    n2_first, n2_second = _inverse_triangle_pair(parameters[2], parameters[3])
     n3_first, n3_second = _inverse_triangle_pair(parameters[4], parameters[6])
     normalized = np.array(
         [
             (parameters[0] + 10.0) / 20.0,
             parameters[1] / 20.0,
-            n2_first,
-            n2_second,
+            (parameters[2] - OXIDE_INDEX_LOWER_BOUND)
+            / (OXIDE_INDEX_UPPER_BOUND - OXIDE_INDEX_LOWER_BOUND),
+            (parameters[3] - OXIDE_INDEX_LOWER_BOUND)
+            / (OXIDE_INDEX_UPPER_BOUND - OXIDE_INDEX_LOWER_BOUND),
             n3_first,
             n3_second,
             parameters[5] / 4.0,

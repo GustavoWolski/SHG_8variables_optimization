@@ -17,9 +17,11 @@ from optimization.constraints import (
     validate_physical_parameters,
 )
 from optimization.objective import (
+    DEFAULT_OBJECTIVE_WEIGHTS,
     InvalidParameterError,
     ObjectiveEvaluator,
     ObjectiveResult,
+    ObjectiveWeights,
     calculate_error_components,
     evaluate,
     objective,
@@ -29,6 +31,8 @@ from optimization.parameterization import (
     INDEX_LOWER_BOUND,
     INDEX_UPPER_BOUND,
     NORMALIZED_PARAMETER_COUNT,
+    OXIDE_INDEX_LOWER_BOUND,
+    OXIDE_INDEX_UPPER_BOUND,
     to_normalized,
     to_physical,
     validate_normalized,
@@ -49,6 +53,13 @@ from optimization.genetic_algorithm import (
     GeneticAlgorithmResult,
     genetic_algorithm,
 )
+from optimization.particle_swarm import (
+    DEFAULT_CONFIGURATION as DEFAULT_PSO_CONFIGURATION,
+    ParticleSwarmConfiguration,
+    ParticleSwarmConvergenceRecord,
+    ParticleSwarmResult,
+    particle_swarm,
+)
 
 __all__ = [
     "LOWER_BOUNDS",
@@ -66,8 +77,10 @@ __all__ = [
     "validate_parameter_vector",
     "validate_physical_parameters",
     "InvalidParameterError",
+    "DEFAULT_OBJECTIVE_WEIGHTS",
     "ObjectiveEvaluator",
     "ObjectiveResult",
+    "ObjectiveWeights",
     "calculate_error_components",
     "evaluate",
     "objective",
@@ -75,6 +88,8 @@ __all__ = [
     "INDEX_LOWER_BOUND",
     "INDEX_UPPER_BOUND",
     "NORMALIZED_PARAMETER_COUNT",
+    "OXIDE_INDEX_LOWER_BOUND",
+    "OXIDE_INDEX_UPPER_BOUND",
     "to_normalized",
     "to_physical",
     "validate_normalized",
@@ -92,4 +107,9 @@ __all__ = [
     "GeneticAlgorithmConvergenceRecord",
     "GeneticAlgorithmResult",
     "genetic_algorithm",
+    "DEFAULT_PSO_CONFIGURATION",
+    "ParticleSwarmConfiguration",
+    "ParticleSwarmConvergenceRecord",
+    "ParticleSwarmResult",
+    "particle_swarm",
 ]

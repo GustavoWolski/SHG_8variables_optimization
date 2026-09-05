@@ -148,7 +148,10 @@ $$
 Logo:
 
 $$
-1.5\leq n_{2,\omega},\;n_{2,2\omega},\;\operatorname{Re}(n_{3,\omega}),\;\operatorname{Re}(n_{3,2\omega})\leq6
+1.0\leq n_{2,\omega},\;n_{2,2\omega}\leq6
+
+$$
+1.5\leq\operatorname{Re}(n_{3,\omega}),\;\operatorname{Re}(n_{3,2\omega})\leq6
 $$
 
 ## 6.4 Partes imaginárias
@@ -165,7 +168,7 @@ $$
 
 # 7. Restrição de Dispersão Normal
 
-Na condição adotada de dispersão normal:
+Na condição adotada de dispersão normal para a camada ativa:
 
 $$
 n(\omega)<n(2\omega)
@@ -174,14 +177,12 @@ $$
 Portanto:
 
 $$
-n_{2,\omega}<n_{2,2\omega}
-$$
-
-$$
 \operatorname{Re}(n_{3,\omega})<\operatorname{Re}(n_{3,2\omega})
 $$
 
-Essas relações são obrigatórias para uma solução fisicamente válida.
+Os índices reais do óxido, $n_{2,\omega}$ e $n_{2,2\omega}$, são variáveis
+independentes em $[1,6]$ e não são ordenados. A relação acima permanece
+obrigatória para a camada 3.
 
 A estratégia preferencial é utilizar parametrização ou constraints que evitem avaliações inválidas. Uma possível reparametrização é:
 
@@ -597,7 +598,8 @@ $$
 $$
 
 $$
-1.5\leq n_{\text{real}}\leq6
+1.0\leq n_{2,\omega},n_{2,2\omega}\leq6,
+\qquad 1.5\leq\operatorname{Re}(n_3)\leq6
 $$
 
 $$
@@ -846,10 +848,6 @@ $$
 $$
 
 ## Dispersão normal
-
-$$
-n_{2,\omega}<n_{2,2\omega}
-$$
 
 $$
 \operatorname{Re}(n_{3,\omega})<\operatorname{Re}(n_{3,2\omega})

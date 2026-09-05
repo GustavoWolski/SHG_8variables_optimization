@@ -10,7 +10,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from optimization.constraints import is_physically_valid
-from optimization.objective import ObjectiveEvaluator, ObjectiveResult
+from optimization.objective import DEFAULT_OBJECTIVE_WEIGHTS, ObjectiveEvaluator, ObjectiveResult, ObjectiveWeights
 from optimization.parameterization import NORMALIZED_PARAMETER_COUNT, to_physical
 
 
@@ -43,6 +43,8 @@ class GeneticAlgorithmConvergenceRecord:
 
     evaluation: int
     best_J: float
+    best_J_unweighted: float
+    best_J_weighted: float
     best_J_T: float
     best_J_R: float
 
@@ -57,6 +59,8 @@ class GeneticAlgorithmResult:
     n_evaluations: int
     runtime_s: float
     best_J: float
+    best_J_unweighted: float
+    best_J_weighted: float
     best_J_T: float
     best_J_R: float
     best_z: NDArray[np.float64]
@@ -65,6 +69,7 @@ class GeneticAlgorithmResult:
     R_theoretical: NDArray[np.float64]
     valid_physics: bool
     convergence_history: tuple[GeneticAlgorithmConvergenceRecord, ...]
+    weights: ObjectiveWeights
     configuration: GeneticAlgorithmConfiguration
     effective_population_size: int
     n_initial_evaluations: int
@@ -201,7 +206,7 @@ def _tournament_selection(
     winner = population[int(indices[0])]
     for raw_index in indices[1:]:
         candidate = population[int(raw_index)]
-        if candidate.evaluation.J < winner.evaluation.J:
+        if candidate.evaluation.J_weighted < winner.evaluation.J_weighted:
             winner = candidate
     return winner
 
@@ -222,14 +227,16 @@ class _Tracker:
         except RuntimeError as error:
             raise RuntimeError(f"GA generated an unrepresentable normalized vector: {normalized!r}") from error
         current = self.evaluator.evaluate(physical)
-        if self.best_evaluation is None or current.J < self.best_evaluation.J:
+        if self.best_evaluation is None or current.J_weighted < self.best_evaluation.J_weighted:
             self.best_z = normalized.copy()
             self.best_evaluation = current
         assert self.best_evaluation is not None
         self.history.append(
             GeneticAlgorithmConvergenceRecord(
                 evaluation=self.evaluator.n_evaluations,
-                best_J=self.best_evaluation.J,
+                best_J=self.best_evaluation.J_weighted,
+                best_J_unweighted=self.best_evaluation.J,
+                best_J_weighted=self.best_evaluation.J_weighted,
                 best_J_T=self.best_evaluation.J_T,
                 best_J_R=self.best_evaluation.J_R,
             )
@@ -240,7 +247,7 @@ class _Tracker:
 def _ranked(population: list[_Individual]) -> list[_Individual]:
     """Stable ordering preserves earlier encountered individuals on exact ties."""
 
-    return sorted(population, key=lambda individual: individual.evaluation.J)
+    return sorted(population, key=lambda individual: individual.evaluation.J_weighted)
 
 
 def genetic_algorithm(
@@ -248,6 +255,7 @@ def genetic_algorithm(
     budget: int,
     seed: int,
     configuration: GeneticAlgorithmConfiguration = DEFAULT_CONFIGURATION,
+    weights: ObjectiveWeights = DEFAULT_OBJECTIVE_WEIGHTS,
 ) -> GeneticAlgorithmResult:
     """Run a real-coded GA in z ∈ [0,1]^8 with an exact physical-call budget.
 
@@ -262,7 +270,7 @@ def genetic_algorithm(
     evaluation_budget = _validate_budget(budget)
     _validate_configuration(configuration)
     rng = np.random.default_rng(seed)
-    evaluator = ObjectiveEvaluator()
+    evaluator = ObjectiveEvaluator(weights=weights)
     tracker = _Tracker(evaluator)
     effective_population_size = min(int(configuration.population_size), evaluation_budget)
 
@@ -328,7 +336,9 @@ def genetic_algorithm(
         budget=evaluation_budget,
         n_evaluations=evaluator.n_evaluations,
         runtime_s=runtime_s,
-        best_J=best.J,
+        best_J=best.J_weighted,
+        best_J_unweighted=best.J,
+        best_J_weighted=best.J_weighted,
         best_J_T=best.J_T,
         best_J_R=best.J_R,
         best_z=tracker.best_z.copy(),
@@ -337,6 +347,7 @@ def genetic_algorithm(
         R_theoretical=best.R_theoretical.copy(),
         valid_physics=best.valid_physics,
         convergence_history=tuple(tracker.history),
+        weights=weights,
         configuration=configuration,
         effective_population_size=effective_population_size,
         n_initial_evaluations=n_initial_evaluations,

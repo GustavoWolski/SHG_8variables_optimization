@@ -968,9 +968,8 @@ $$
 
 ## Para a camada 2
 
-$$
-n_{2,\omega}<n_{2,2\omega}
-$$
+Os índices reais do óxido são coordenadas independentes, cada uma no
+intervalo fechado $[1,6]$. Não há condição de ordenação para esta camada.
 
 ## Para a camada 3
 
@@ -990,7 +989,9 @@ $$
 
 ## Intuição
 
-Como $2\omega$ possui frequência maior que $\omega$, a condição adotada para a região de dispersão normal exige que o índice real aumente com a frequência.
+Para a camada 3, como $2\omega$ possui frequência maior que $\omega$, a
+condição adotada para a região de dispersão normal exige que o índice real
+aumente com a frequência. Esta condição não é imposta ao óxido.
 
 Uma forma de garantir isso automaticamente na otimização é:
 

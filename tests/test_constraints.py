@@ -70,12 +70,16 @@ def test_each_parameter_above_its_upper_bound_is_invalid(index: int) -> None:
     )
 
 
-def test_n2_normal_dispersion_must_be_strict() -> None:
+@pytest.mark.parametrize(
+    ("n2_w", "n2_2w"),
+    [(5.0, 2.0), (2.0, 2.0), (1.0, 6.0), (6.0, 1.0)],
+)
+def test_oxide_indices_are_independent_within_their_inclusive_bounds(n2_w: float, n2_2w: float) -> None:
     parameters = VALID_PARAMETERS.copy()
-    parameters[2] = parameters[3]
+    parameters[2:4] = (n2_w, n2_2w)
 
-    assert "normal_dispersion_n2" in _codes(parameters)
-    assert any("n2_w" in reason and "n2_2w" in reason for reason in invalid_reasons(parameters))
+    assert is_physically_valid(parameters)
+    assert "normal_dispersion_n2" not in _codes(parameters)
 
 
 def test_n3_real_normal_dispersion_must_be_strict() -> None:
@@ -97,13 +101,13 @@ def test_feasible_vectors_at_inclusive_box_limits_are_valid(parameters: np.ndarr
     assert is_physically_valid(parameters)
 
 
-def test_strict_dispersion_can_make_a_closed_box_boundary_infeasible() -> None:
+def test_layer_3_strict_dispersion_can_make_a_closed_box_boundary_infeasible() -> None:
     parameters = VALID_PARAMETERS.copy()
-    parameters[2] = 6.0
-    parameters[3] = 6.0
+    parameters[4] = 6.0
+    parameters[6] = 6.0
 
     assert "above_upper_bound" not in _codes(parameters)
-    assert "normal_dispersion_n2" in _codes(parameters)
+    assert "normal_dispersion_n3" in _codes(parameters)
 
 
 @pytest.mark.parametrize("value", [np.nan, np.inf, -np.inf])
@@ -129,4 +133,3 @@ def test_non_vector_shape_is_invalid() -> None:
     parameters = VALID_PARAMETERS.reshape(2, 4)
 
     assert _codes(parameters) == {"invalid_shape"}
-

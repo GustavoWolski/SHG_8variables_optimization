@@ -10,17 +10,12 @@ from dataclasses import asdict
 from pathlib import Path
 from time import perf_counter
 
-import matplotlib
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import numpy as np
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT / "src"))
 
-from experiments.data import D_NM, R_EXP, T_EXP  # noqa: E402
 from optimization.constraints import PARAMETER_NAMES  # noqa: E402
 from optimization.random_search import RandomSearchResult, random_search  # noqa: E402
 
@@ -115,49 +110,6 @@ def _write_parameters(results: list[RandomSearchResult], output_path: Path) -> N
             )
 
 
-def _plot_convergence(results: list[RandomSearchResult], output_path: Path) -> None:
-    """Plot raw per-seed best-so-far curves plus the pointwise median and IQR."""
-
-    histories = np.array([[record.best_J for record in result.convergence_history] for result in results])
-    evaluations = np.array([record.evaluation for record in results[0].convergence_history])
-    figure, axis = plt.subplots(figsize=(10, 6))
-    for result, history in zip(results, histories, strict=True):
-        axis.plot(evaluations, history, linewidth=1.0, alpha=0.75, label=f"seed {result.seed}")
-    median = np.median(histories, axis=0)
-    q25, q75 = np.percentile(histories, [25, 75], axis=0)
-    axis.plot(evaluations, median, color="black", linewidth=1.4, label="mediana")
-    axis.fill_between(evaluations, q25, q75, color="black", alpha=0.12, label="IQR")
-    axis.set_xlabel("Avaliação física")
-    axis.set_ylabel("Melhor J até a avaliação")
-    axis.set_title("Random Search — convergência baseline preliminar")
-    axis.grid(alpha=0.25)
-    axis.legend()
-    figure.tight_layout()
-    figure.savefig(output_path, dpi=160)
-    plt.close(figure)
-
-
-def _plot_best_fit(best: RandomSearchResult, output_path: Path) -> None:
-    """Plot experimental and theoretical transmission/reflection for the global best run."""
-
-    figure, axes = plt.subplots(2, 1, figsize=(9, 7), sharex=True)
-    axes[0].plot(D_NM, T_EXP, "o", label="T experimental")
-    axes[0].plot(D_NM, best.T_theoretical, "-o", label="T teórico")
-    axes[0].set_ylabel("Transmissão normalizada")
-    axes[0].set_title(f"Melhor Random Search: seed {best.seed}")
-    axes[0].grid(alpha=0.25)
-    axes[0].legend()
-    axes[1].plot(D_NM, R_EXP, "o", label="R experimental")
-    axes[1].plot(D_NM, best.R_theoretical, "-o", label="R teórico")
-    axes[1].set_xlabel("Espessura medida (nm)")
-    axes[1].set_ylabel("Reflexão normalizada")
-    axes[1].grid(alpha=0.25)
-    axes[1].legend()
-    figure.tight_layout()
-    figure.savefig(output_path, dpi=160)
-    plt.close(figure)
-
-
 def _write_report(
     results: list[RandomSearchResult],
     statistics: dict[str, dict[str, float]],
@@ -244,10 +196,8 @@ def main() -> int:
     _write_history(results, arguments.output_dir / "convergence_history.csv")
     statistics = _write_summary(results, arguments.output_dir / "summary.csv")
     _write_parameters(results, arguments.output_dir / "best_parameters.csv")
-    best = min(results, key=lambda result: result.best_J)
-    _plot_convergence(results, arguments.output_dir / "convergence.png")
-    _plot_best_fit(best, arguments.output_dir / "best_fit.png")
     _write_report(results, statistics, total_runtime_s, arguments.output_dir / "report.md")
+    print("Regenerate all standardized figures with scripts/regenerate_benchmark_figures.py")
     return 0
 
 

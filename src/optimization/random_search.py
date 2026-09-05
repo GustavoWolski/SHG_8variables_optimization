@@ -10,7 +10,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from optimization.constraints import is_physically_valid
-from optimization.objective import ObjectiveEvaluator, ObjectiveResult
+from optimization.objective import DEFAULT_OBJECTIVE_WEIGHTS, ObjectiveEvaluator, ObjectiveResult, ObjectiveWeights
 from optimization.parameterization import to_physical
 
 
@@ -20,6 +20,8 @@ class ConvergenceRecord:
 
     evaluation: int
     best_J: float
+    best_J_unweighted: float
+    best_J_weighted: float
     best_J_T: float
     best_J_R: float
 
@@ -34,6 +36,8 @@ class RandomSearchResult:
     n_evaluations: int
     runtime_s: float
     best_J: float
+    best_J_unweighted: float
+    best_J_weighted: float
     best_J_T: float
     best_J_R: float
     best_z: NDArray[np.float64]
@@ -42,6 +46,7 @@ class RandomSearchResult:
     R_theoretical: NDArray[np.float64]
     valid_physics: bool
     convergence_history: tuple[ConvergenceRecord, ...]
+    weights: ObjectiveWeights
 
 
 def _validate_budget(budget: int) -> int:
@@ -61,6 +66,7 @@ def _result_from_best(
     best_z: NDArray[np.float64],
     best_evaluation: ObjectiveResult,
     history: list[ConvergenceRecord],
+    weights: ObjectiveWeights,
 ) -> RandomSearchResult:
     """Build an immutable result after asserting the official physical count."""
 
@@ -74,7 +80,9 @@ def _result_from_best(
         budget=budget,
         n_evaluations=evaluator.n_evaluations,
         runtime_s=runtime_s,
-        best_J=best_evaluation.J,
+        best_J=best_evaluation.J_weighted,
+        best_J_unweighted=best_evaluation.J,
+        best_J_weighted=best_evaluation.J_weighted,
         best_J_T=best_evaluation.J_T,
         best_J_R=best_evaluation.J_R,
         best_z=best_z.copy(),
@@ -83,10 +91,13 @@ def _result_from_best(
         R_theoretical=best_evaluation.R_theoretical.copy(),
         valid_physics=best_evaluation.valid_physics,
         convergence_history=tuple(history),
+        weights=weights,
     )
 
 
-def random_search(*, budget: int, seed: int) -> RandomSearchResult:
+def random_search(
+    *, budget: int, seed: int, weights: ObjectiveWeights = DEFAULT_OBJECTIVE_WEIGHTS
+) -> RandomSearchResult:
     """Run serial uniform Random Search in ``z ∈ [0, 1]^8``.
 
     Every candidate is mapped through :func:`to_physical` before evaluation,
@@ -97,7 +108,7 @@ def random_search(*, budget: int, seed: int) -> RandomSearchResult:
 
     evaluation_budget = _validate_budget(budget)
     rng = np.random.default_rng(seed)
-    evaluator = ObjectiveEvaluator()
+    evaluator = ObjectiveEvaluator(weights=weights)
     history: list[ConvergenceRecord] = []
     best_z: NDArray[np.float64] | None = None
     best_evaluation: ObjectiveResult | None = None
@@ -107,14 +118,16 @@ def random_search(*, budget: int, seed: int) -> RandomSearchResult:
         normalized = rng.uniform(0.0, 1.0, size=8)
         physical = to_physical(normalized)
         current = evaluator.evaluate(physical)
-        if best_evaluation is None or current.J < best_evaluation.J:
+        if best_evaluation is None or current.J_weighted < best_evaluation.J_weighted:
             best_z = normalized.copy()
             best_evaluation = current
         assert best_evaluation is not None
         history.append(
             ConvergenceRecord(
                 evaluation=evaluator.n_evaluations,
-                best_J=best_evaluation.J,
+                best_J=best_evaluation.J_weighted,
+                best_J_unweighted=best_evaluation.J,
+                best_J_weighted=best_evaluation.J_weighted,
                 best_J_T=best_evaluation.J_T,
                 best_J_R=best_evaluation.J_R,
             )
@@ -131,4 +144,5 @@ def random_search(*, budget: int, seed: int) -> RandomSearchResult:
         best_z=best_z,
         best_evaluation=best_evaluation,
         history=history,
+        weights=weights,
     )

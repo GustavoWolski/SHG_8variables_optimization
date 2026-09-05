@@ -135,7 +135,11 @@ ponto flutuante; os CSVs em `tests/reference/` são a regressão versionada.
 A regressão automática de `T` e `R` usa `rtol=1e-12` e `atol=1e-28`, margem
 conservadora sobre os máximos observados sem mascarar uma divergência física.
 
-## D-009 — Espaço oficial de parâmetros e constraints
+## D-009 — Espaço oficial de parâmetros e constraints (Search-space version 1; histórico)
+
+Esta decisão descreve o espaço v1 do checkpoint original. As suas regras de
+óxido foram substituídas pela D-019; ela é preservada para explicar os
+artefatos históricos.
 
 `optimization/constraints.py` define, em uma única fonte reutilizável, a
 ordem oficial dos oito parâmetros, unidades, limites fechados, validação de
@@ -161,12 +165,11 @@ as coordenadas internas diretamente ao espaço viável e não consome avaliaçõ
 da função objetivo com candidatos inválidos.
 
 A recomendação principal é uma reparametrização compartilhada, aplicada antes
-de toda avaliação por GA, PSO, DE e CMA-ES: para cada par dispersivo, gerar o
-índice de `w` e uma diferença positiva limitada até o teto 6. O mapeamento e
-o tratamento dos limites abertos necessários à desigualdade estrita serão
-definidos uma única vez antes do primeiro algoritmo. Rejection, repair e
-penalty não serão usados como estratégia principal; qualquer uso auxiliar
-deverá ser idêntico e contabilizado para todos os algoritmos.
+de toda avaliação por GA, PSO, DE e CMA-ES. No espaço v2, somente o par real
+da camada 3 usa diferença positiva limitada até o teto 6; as duas coordenadas
+do óxido são afins e independentes. Rejection, repair e penalty não serão
+usados como estratégia principal; qualquer uso auxiliar deverá ser idêntico e
+contabilizado para todos os algoritmos.
 
 ## D-011 — Função objetivo oficial e contagem de avaliações
 
@@ -201,7 +204,11 @@ paralelização, GPU, cache ou alterações da física. As projeções para budg
 elas excluem overhead de algoritmos, I/O e startup. O benchmark não escolhe o
 budget definitivo.
 
-## D-013 — Parametrização normalizada comum e dispersão estrita
+## D-013 — Parametrização normalizada comum e dispersão estrita (Search-space version 1; histórico)
+
+O texto a seguir registra a parametrização usada pelos resultados v1. A
+parametrização atual do óxido é a da D-019; a triangular continua válida
+somente para a camada 3.
 
 Todo algoritmo futuro trabalhará exclusivamente em `z ∈ [0, 1]^8` e chamará
 `optimization/parameterization.py` para obter `p`. Os quatro parâmetros
@@ -329,6 +336,128 @@ results/genetic_algorithm_baseline/.
 Assim como os demais baselines, as cinco seeds permitem somente comparação
 descritiva por número de avaliações físicas; nenhuma conclusão de
 superioridade estatística foi adotada.
+
+## D-018 — Infraestrutura única de visualização dos benchmarks
+
+`src/analysis/plotting.py` passa a ser a única fonte de estilo, carregamento
+analítico, alinhamento de históricos, estatísticas descritivas e plotting dos
+benchmarks. Os runners de Random Search, Differential Evolution e Genetic
+Algorithm escrevem somente os artefatos numéricos; não contêm mais código
+Matplotlib. `scripts/regenerate_benchmark_figures.py` lê `runs.csv` e
+`convergence_history.csv` e reconstrói as figuras sem chamar simulador,
+função objetivo ou otimizador. Os dados experimentais continuam vindo da
+fonte oficial única `experiments/data.py`.
+
+O padrão visual usa terminologia científica curta em inglês. Best-fits têm
+layout 1×2 (Transmission e Reflection), eixos `Thickness (nm)`,
+`Normalized transmission` e `Normalized reflection`, pontos experimentais
+cinza-escuros e modelo azul com linha e marcadores. A cor do best-fit separa
+Experimental de Model; a cor nas comparações separa algoritmos. O mapa fixo,
+baseado em uma paleta adequada a deficiência de visão de cores, reserva
+laranja para Random Search, azul para Differential Evolution, verde para
+Genetic Algorithm, roxo para PSO e vermelhão para CMA-ES. PNGs usam 320 DPI e
+cada figura recebe também PDF vetorial.
+
+Os limites de best-fit são calculados em conjunto a partir dos dados
+experimentais e das três melhores curvas salvas. A regra adiciona 5% da
+amplitude total em cada extremidade e impede limite inferior negativo para
+as respostas. No checkpoint atual, os limites comuns são 38,25–626,75 nm,
+0–4086,6445109222245 para transmissão e
+358,41259650626085–1577,126066833035 para reflexão. Essa mesma regra será
+recalculada ao registrar algoritmos futuros; ela não depende da ordem de
+cores do Matplotlib.
+
+Históricos best-so-far são alinhados pela união das avaliações registradas
+até o menor budget completo comum. Para cada seed, o valor em uma avaliação
+`k` é o último melhor J conhecido até `k`, por forward-fill stepwise. Não há
+interpolação linear nem suavização. Em cada ponto da grade comum são
+calculados `median`, percentil 25 (`Q1`) e percentil 75 (`Q3`) com a convenção
+padrão do NumPy; `IQR = Q3 - Q1`. A figura científica principal mostra uma
+linha sólida para a mediana e faixa transparente para o IQR, nunca as seeds
+individuais.
+
+As comparações incluem escala linear no budget completo e escala logarítmica
+em x, sempre iniciando na avaliação 1. Ambas compartilham o mesmo limite de
+J. O zoom final usa exatamente as últimas 20% das avaliações; no baseline de
+50.000, isso corresponde a 40.001–50.000. Seu intervalo y é derivado de todas
+as medianas, Q1 e Q3 nessa janela, novamente com margem de 5%; no checkpoint
+atual é 0,3566068476077216–0,9118024833017526. Uma figura log-y só é gerada
+se o envelope robusto positivo cobrir fator pelo menos 100; os resultados
+atuais não satisfazem esse critério, portanto ela não foi criada.
+
+`results/comparisons/current_algorithm_summary.csv` é derivado das linhas de
+`runs.csv`. A regeneração verificou SHA-256 antes e depois de todos os CSVs
+dos três benchmarks e confirmou que permanecem idênticos. Nenhuma otimização
+foi reexecutada e nenhum resultado científico foi recalculado.
+
+## D-019 — Search-space version 2: óxido independente
+
+Os baselines originalmente registrados (Random Search, Differential Evolution
+e Genetic Algorithm, seeds 1–5, 50.000 avaliações físicas por seed) passam a
+ser identificados como **Search-space version 1**. Eles foram executados com
+`1.5 <= n2_w, n2_2w <= 6` e a desigualdade estrita `n2_w < n2_2w`; seus
+artefatos são preservados como histórico, mas não são diretamente comparáveis
+aos novos resultados.
+
+O **Search-space version 2** mantém `log10_chi` em `[-10,10]`, `d2_nm` em
+`[0,20]`, as partes imaginárias da camada 3 em `[0,4]`, e o par real da camada
+3 em `[1.5,6]` com `re_n3_w < re_n3_2w`. Apenas o óxido muda: `n2_w` e
+`n2_2w` são agora coordenadas independentes em `[1,6]`; igualdade e ordem
+inversa são válidas.
+
+A transformação compartilhada passa a usar literalmente
+`n2_w = 1 + 5*z[2]` e `n2_2w = 1 + 5*z[3]`, sem ordenação, repair ou troca de
+valores. O mapa triangular, `DELTA_N` e sua inversa continuam restritos ao
+par real da camada 3. Cada novo benchmark deve registrar a versão do espaço
+de busca e ser salvo separadamente sob `results/search_space_v2/`.
+
+O rebenchmark v2 foi concluído com seeds 1–5 e 50.000 avaliações físicas por
+seed para cada algoritmo. Os artefatos e as figuras read-only estão em
+`results/search_space_v2/`; `PROJECT_STATE.md` registra os resultados
+numéricos do checkpoint.
+
+## D-020 — Particle Swarm Optimization no Search-space version 2
+
+O PSO foi definido antes da execução do baseline como uma implementação
+serial, transparente e `global_best` exclusivamente no cubo normalizado
+`z ∈ [0,1]^8`. A configuração fixa é: `swarm_size=100`, peso de inércia
+`0.7298`, coeficientes cognitivo e social `c1=c2=1.49618`, inicialização de
+velocidades uniforme em `[-0.1,0.1]` e limite por coordenada `[-0.2,0.2]`.
+A fronteira é refletiva em `z`; não há repair no espaço físico, biblioteca de
+PSO externa, tuning contra os resultados dos outros algoritmos ou lógica do
+simulador no módulo do otimizador.
+
+A população inicial consome avaliações físicas. Cada atualização completa
+avalia todas as partículas, e uma atualização final parcial avalia apenas o
+prefixo necessário para que `ObjectiveEvaluator.n_evaluations` atinja
+exatamente o budget. O resultado usa a avaliação detalhada já armazenada do
+melhor global; não há chamada física adicional para reconstruí-lo. Toda a
+aleatoriedade usa um único `np.random.default_rng(seed)`.
+
+O smoke test (seed 1, 1.000 avaliações) terminou com contagem exata e
+`J=0.9021483513717922`. O baseline de seeds 1–5, 50.000 avaliações por seed,
+foi salvo em `results/search_space_v2/particle_swarm/`; as figuras comparando
+RS, DE, GA e PSO foram regeneradas read-only a partir dos CSVs salvos.
+
+## D-021 — Weighted-reflection sensitivity experiment (complementar)
+
+O objetivo científico principal permanece imutável: `J = J_T + J_R`. Para um
+estudo complementar controlado, a infraestrutura aceita `J_weighted = w_T J_T
++ w_R J_R`; os defaults `w_T=w_R=1` preservam exatamente o comportamento e os
+artefatos dos baselines. Cada avaliação continua expondo `J_T`, `J_R`,
+`J_unweighted = J_T + J_R` e `J_weighted`; a seleção do otimizador usa apenas
+o último quando pesos não unitários são solicitados.
+
+O screening usa exclusivamente Search-space version 2, seeds 1–5, 50.000
+avaliações físicas por seed, hiperparâmetros inalterados e `w_T=1` para
+`w_R ∈ {1,2,5,10}`. Assim foram executadas 80 buscas (4 algoritmos × 4 pesos
+× 5 seeds), totalizando 4.000.000 avaliações físicas. `w_R=1` é o controle e
+não foi reinterpretado como novo experimento principal.
+
+Os artefatos de cada algoritmo × peso, as figuras de trade-off, os best-fits
+padronizados e o relatório estão em `results/weighted_reflection/`. A análise
+é descritiva: toda conclusão compara separadamente `J_T` e `J_R`, sem inferência
+estatística formal ou escolha definitiva de peso.
 
 ## Ambiguidades abertas
 

@@ -5,8 +5,10 @@ import pytest
 
 from experiments.data import R_EXP, R_EXP_MAX, T_EXP, T_EXP_MAX
 from optimization.objective import (
+    DEFAULT_OBJECTIVE_WEIGHTS,
     InvalidParameterError,
     ObjectiveEvaluator,
+    ObjectiveWeights,
     calculate_error_components,
     evaluate,
     objective,
@@ -63,12 +65,12 @@ def test_same_input_produces_the_same_detailed_result() -> None:
 
 def test_invalid_vector_is_rejected_before_a_detailed_evaluation() -> None:
     invalid = VALID_PARAMETERS.copy()
-    invalid[2] = invalid[3]
+    invalid[4] = invalid[6]
 
-    with pytest.raises(InvalidParameterError, match="n2_w") as error:
+    with pytest.raises(InvalidParameterError, match="re_n3_w") as error:
         evaluate(invalid)
 
-    assert {violation.code for violation in error.value.violations} == {"normal_dispersion_n2"}
+    assert {violation.code for violation in error.value.violations} == {"normal_dispersion_n3"}
 
 
 def test_stateful_evaluator_counts_each_valid_physical_call() -> None:
@@ -94,3 +96,35 @@ def test_rejected_candidate_does_not_increment_physical_evaluation_count() -> No
 
 def test_scalar_objective_matches_complete_evaluation() -> None:
     assert objective(VALID_PARAMETERS) == evaluate(VALID_PARAMETERS).J
+
+
+def test_default_weights_preserve_the_scientific_unweighted_objective_exactly() -> None:
+    result = evaluate(VALID_PARAMETERS)
+
+    assert result.J_weighted == result.J
+    assert objective(VALID_PARAMETERS, weights=DEFAULT_OBJECTIVE_WEIGHTS) == result.J
+
+
+def test_weighted_objective_preserves_components_and_exposes_both_totals() -> None:
+    weights = ObjectiveWeights(transmission=1.0, reflection=5.0)
+    result = evaluate(VALID_PARAMETERS, weights=weights)
+    evaluator = ObjectiveEvaluator(weights=weights)
+
+    assert result.J == result.J_T + result.J_R
+    assert result.J_weighted == result.J_T + 5.0 * result.J_R
+    assert objective(VALID_PARAMETERS, weights=weights) == result.J_weighted
+    assert evaluator.objective(VALID_PARAMETERS) == result.J_weighted
+    assert evaluator.n_evaluations == 1
+
+
+@pytest.mark.parametrize(
+    "weights",
+    [
+        ObjectiveWeights(transmission=-1.0, reflection=1.0),
+        ObjectiveWeights(transmission=1.0, reflection=float("nan")),
+        ObjectiveWeights(transmission=0.0, reflection=0.0),
+    ],
+)
+def test_invalid_objective_weights_are_rejected(weights: ObjectiveWeights) -> None:
+    with pytest.raises(ValueError):
+        evaluate(VALID_PARAMETERS, weights=weights)
