@@ -7,6 +7,99 @@
 
 ---
 
+# Atualização V3 — modelo sem óxido explícito
+
+As seções históricas abaixo descrevem o modelo V2 preservado, sua validação
+MATLAB/Octave × Python e seus benchmarks. Elas não são apagadas nem
+reinterpretadas. A configuração física nova e vigente para o **Search-space
+version 3 (V3)** é a seguinte.
+
+## Estrutura óptica V3
+
+O óxido deixa de ser uma camada explícita. A pilha passa de:
+
+$$
+\text{ar}\;|\;\text{óxido}\;|\;\text{camada ativa/Nb}\;|\;\text{vidro}
+$$
+
+para:
+
+$$
+\text{ar}\;|\;\text{camada ativa/Nb}\;|\;\text{vidro}.
+$$
+
+A espessura experimental de referência é aproximadamente 150 nm e obedecia
+à relação física acordada
+
+$$
+d_{\mathrm{total}}=d_{\mathrm{oxide}}+d_{\mathrm{Nb}},
+\qquad 0\leq d_{\mathrm{oxide}}\leq20\ \mathrm{nm}.
+$$
+
+Assim, a coordenada de otimização V3 é diretamente a espessura de Nb,
+
+$$
+d_{3,\mathrm{Nb}}=150-d_{\mathrm{oxide}},
+\qquad 130\leq d_{3,\mathrm{Nb}}\leq150\ \mathrm{nm}.
+$$
+
+O eixo de espessuras experimentais existente é preservado sem alterar os
+dados. Para cada total medido $D$, a espessura de Nb usada na propagação é a
+substituição algébrica da relação anterior:
+
+$$
+d_{\mathrm{Nb}}(D)=D-\left(150-d_{3,\mathrm{Nb}}\right).
+$$
+
+Em $D=150$ nm, esta expressão é exatamente a variável otimizada
+$d_{3,\mathrm{Nb}}$. O termo $150-d_{3,\mathrm{Nb}}$ não é uma coordenada,
+índice ou camada óptica: ele somente mantém a mesma referência de espessura
+dos dados que o modelo anterior já usava.
+
+## Vetor e limites V3
+
+$$
+\mathbf{p}_{V3}=[
+\log_{10}(\chi),
+d_{3,\mathrm{Nb}}\,(\mathrm{nm}),
+\operatorname{Re}(n_{3,\omega}),
+\operatorname{Im}(n_{3,\omega}),
+\operatorname{Re}(n_{3,2\omega}),
+\operatorname{Im}(n_{3,2\omega})
+].
+$$
+
+Portanto, o V3 tem **seis**, e não oito, variáveis independentes:
+
+| Coordenada | Limite |
+|---|---:|
+| $\log_{10}(\chi)$ | $[-10,10]$ |
+| $d_{3,\mathrm{Nb}}$ | $[130,150]$ nm |
+| $\operatorname{Re}(n_{3,\omega})$ | $[1.5,6]$ |
+| $\operatorname{Im}(n_{3,\omega})$ | $[0,4]$ |
+| $\operatorname{Re}(n_{3,2\omega})$ | $[1.5,6]$ |
+| $\operatorname{Im}(n_{3,2\omega})$ | $[0,4]$ |
+
+Os índices reais da camada ativa são independentes. A restrição
+$\operatorname{Re}(n_{3,\omega})<\operatorname{Re}(n_{3,2\omega})$ foi
+removida completamente: não há penalty, rejection, repair, epsilon,
+reparametrização triangular nem `constraint_violation` para essa relação.
+
+O óxido não possui, no V3, espessura própria, índices próprio, parte
+imaginária, interface, matriz de propagação ou matriz de transferência. A
+função objetivo não muda: $J=J_T+J_R$. Nenhum algoritmo de otimização nem
+benchmark é alterado por esta configuração.
+
+## Estado da validação V3
+
+O V3 é uma estrutura física nova e não herda automaticamente a declaração de
+equivalência MATLAB/Octave × Python do V2. A implementação deve primeiro ser
+verificada por testes internos; futuros casos de referência só podem ser
+gerados por uma implementação MATLAB/Octave V3 correspondente, nunca por
+valores fabricados.
+
+---
+
 # 1. Objetivo
 
 Desenvolver, implementar e comparar diferentes algoritmos de otimização para identificar os parâmetros físicos de uma estrutura multicamada que melhor reproduzam **simultaneamente** os dados experimentais de transmissão e reflexão.

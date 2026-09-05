@@ -6,6 +6,16 @@
 - [x] Criar esqueleto de pacotes Python e configuração pytest.
 - [x] Registrar decisões, dependências e ambiguidades iniciais.
 
+## Search-space version 3 — modelo sem óxido explícito
+
+- [x] Preservar V2, a sua validação MATLAB/Octave e todos os benchmarks sem alteração.
+- [x] Criar o vetor V3 de seis coordenadas, sem parâmetros independentes do óxido.
+- [x] Usar `d3_nb_nm` diretamente em `[130,150]` nm e remover a ordenação dos índices reais de Nb.
+- [x] Implementar a pilha V3 `ar | Nb | vidro`, sem interfaces ou propagação do óxido.
+- [x] Manter fontes SHG, normalização MoS2, dados experimentais e `J = J_T + J_R`.
+- [x] Criar testes internos V3 de limites, ordem livre, estrutura, finitude e determinismo.
+- [ ] Implementar e executar exportação de casos MATLAB/Octave especificamente para V3 antes de declarar equivalência entre linguagens.
+
 ## Port físico e validação (ordem obrigatória)
 
 - [x] Portar fielmente `rij.m` para `src/physics/fresnel.py`.

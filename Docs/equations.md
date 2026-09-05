@@ -37,6 +37,46 @@ No código atual, o processo é realizado primeiro na frequência fundamental $\
 
 ---
 
+# Atualização V3 — pilha direta ar | Nb | vidro
+
+As equações numeradas abaixo descrevem a pilha V2 preservada. Para o V3, o
+óxido deixa de existir como meio óptico: não há seus índices, interfaces ou
+matrizes de propagação. O campo continua sendo gerado na camada ativa/Nb e as
+fontes não lineares, as intensidades e a normalização por MoS$_2$ não mudam.
+
+A coordenada direta de espessura é $d_{3,\mathrm{Nb}}\in[130,150]$ nm. Para
+preservar o eixo experimental $D$ do modelo anterior, a espessura que entra
+nas fases de Nb é
+
+$$
+d_{\mathrm{Nb}}(D)=D-\left(150\ \mathrm{nm}-d_{3,\mathrm{Nb}}\right).
+$$
+
+O valor entre parênteses é somente a substituição algébrica da relação
+$d_{\mathrm{total}}=d_{\mathrm{oxide}}+d_{\mathrm{Nb}}$ na referência de
+150 nm; ele não reintroduz uma camada de óxido na matriz.
+
+Na frequência fundamental, a estrutura V3 é:
+
+$$
+T_{\omega,V3}=M_{43,\omega}P_{3,\omega}M_{31,\omega},
+\qquad
+\mathbf{E}_{3,\omega}=M_{31,\omega}\mathbf{E}_{1,\omega}.
+$$
+
+Em $2\omega$, o bloco à esquerda da fonte é apenas a interface direta:
+
+$$
+M_{L,V3}=M_{31,2\omega}.
+$$
+
+O bloco à direita, as matrizes de fonte $2k$ e $0k$, a soma coerente dos
+campos, $I=|E|^2$, e as normalizações $T=I_4/I_{\mathrm{MoS2},4}$ e
+$R=I_1/I_{\mathrm{MoS2},1}$ permanecem os mesmos. Os dois índices reais de
+Nb são coordenadas independentes no V3; não há restrição de dispersão normal.
+
+---
+
 # Equação 1 — Campo elétrico dentro de uma camada
 
 ## O que faz?

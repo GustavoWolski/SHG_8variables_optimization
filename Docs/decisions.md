@@ -459,6 +459,56 @@ padronizados e o relatório estão em `results/weighted_reflection/`. A análise
 é descritiva: toda conclusão compara separadamente `J_T` e `J_R`, sem inferência
 estatística formal ou escolha definitiva de peso.
 
+## D-022 — Search-space version 3: Nb direto, sem óxido explícito
+
+O V2 e todos os seus resultados permanecem imutáveis. O V3 é uma configuração
+nova e isolada, implementada nos módulos com sufixo `_v3`; nenhum algoritmo,
+benchmark, dado experimental, função objetivo V2, constraint V2 ou simulador
+V2 foi substituído.
+
+O vetor V2
+
+`[log10_chi, d2_nm, n2_w, n2_2w, re_n3_w, im_n3_w, re_n3_2w, im_n3_2w]`
+
+continha os três parâmetros independentes do óxido (`d2_nm`, `n2_w` e
+`n2_2w`) e os cinco restantes associados à resposta não linear/camada ativa.
+Sua matriz fundamental era
+
+`M431w * P31w * M321w * P21w * M211w`.
+
+O V3 contém somente seis coordenadas:
+
+`[log10_chi, d3_nb_nm, re_n3_w, im_n3_w, re_n3_2w, im_n3_2w]`.
+
+A espessura total experimental de referência é aproximadamente 150 nm;
+adotou-se a relação acordada `d_total = d_oxide + d_Nb`, com até 20 nm de
+óxido. A variável é diretamente `d3_nb_nm = d_Nb` em `[130,150]` nm, não
+`d_oxide`. Para manter o eixo experimental original, a fase de Nb em um ponto
+de espessura total `D` usa `d_Nb(D) = D - (150 - d3_nb_nm)`. O complemento
+`150 - d3_nb_nm` é derivado, não é uma variável V3 e não corresponde a uma
+camada óptica explícita.
+
+Consequentemente, as matrizes fundamentais V3 são
+`M431w * P31w * M311w`, o campo interno é `M311w * E11w`, e o bloco esquerdo
+em segundo harmônico é a única interface direta `M312w`. Não existem no V3
+`n2_w`, `n2_2w`, `d2_nm`, `M211w`, `P21w`, `M321w`, `M212w`, `P22w` ou
+`M322w`. As fontes `2k` e `0k`, o bloco à direita, as intensidades e a
+normalização MoS2 foram copiados sem alteração de fórmula.
+
+As partes reais de índice da camada ativa continuam individualmente em
+`[1.5,6]`, mas são independentes. A regra
+`re_n3_w < re_n3_2w` foi removida integralmente do V3: não há penalty,
+rejection, repair, epsilon, parametrização triangular ou violação de
+constraint relativa à sua ordem. As partes imaginárias permanecem em `[0,4]`
+e `log10_chi` em `[-10,10]`.
+
+O objetivo V3 continua literalmente `J = J_T + J_R`, usando os mesmos dados
+e as mesmas normalizações. Foram adicionados testes internos para bounds,
+ordem livre dos índices, ausência de parâmetros do óxido, finitude e
+determinismo. A equivalência MATLAB/Octave × Python V2 não se aplica ao V3;
+casos de referência V3 só poderão ser adicionados após executar uma
+implementação MATLAB/Octave V3 correspondente.
+
 ## Ambiguidades abertas
 
 1. Os caminhos foram normalizados para `docs/methodology.md`,

@@ -1,21 +1,48 @@
 # Project State
 
+## 0. Checkpoint de implementação — Search-space version 3
+
+O V2 permanece preservado, incluindo o simulador `ar | óxido | camada ativa |
+vidro`, suas referências MATLAB/Octave, constraints, parametrização e todos os
+benchmarks/resultados. Nenhum algoritmo ou artefato de benchmark foi
+modificado nesta etapa.
+
+O V3 é uma configuração isolada em módulos com sufixo `_v3`. A pilha óptica é
+`ar | camada ativa/Nb | vidro`, sem espessura, índice, interface, propagação ou
+matriz de transferência independente do óxido. Seu vetor tem seis parâmetros:
+
+    [log10_chi, d3_nb_nm, re_n3_w, im_n3_w, re_n3_2w, im_n3_2w]
+
+`d3_nb_nm` é a espessura direta de Nb na referência total de 150 nm e tem
+limites `[130,150]` nm; os índices reais de Nb são independentes em `[1.5,6]`.
+Não existe restrição de dispersão normal no V3. A substituição no eixo de
+espessuras preservado é `d_Nb(D) = D - (150 - d3_nb_nm)`; o complemento não é
+um parâmetro nem uma camada de óxido explícita. O objetivo continua exatamente
+`J = J_T + J_R`, com os dados experimentais originais.
+
+Foram aprovados testes internos de limites, ausência de parâmetros do óxido,
+ausência de ordenação dos índices, estrutura matricial direta, finitude e
+determinismo. Em 2026-09-05: `20 passed` nos testes V3 e `179 passed` na
+suíte completa. Não há declaração MATLAB/Octave × Python para V3; uma
+implementação MATLAB/Octave V3 deverá gerar referências antes dessa validação.
+
 ## 1. Objetivo científico
 
-Identificar os oito parâmetros físicos que reproduzem simultaneamente as
-curvas experimentais de transmissão e reflexão:
+No V2 histórico, identificar os oito parâmetros físicos que reproduzem
+simultaneamente as curvas experimentais de transmissão e reflexão. No V3,
+a mesma identificação usa as seis coordenadas descritas no checkpoint acima:
 
     p* = argmin J(p),   J = J_T + J_R
 
 A função principal não usa a penalização de pico do MATLAB legado.
 
-## 2. Formulação atual
+## 2. Formulação V2 validada
 
 O modelo físico é uma pilha de quatro meios: ar | óxido | camada ativa |
 vidro, sob fundamental de 1560 nm. Python é a implementação principal; o
 MATLAB/Octave preservado é a referência física e numérica.
 
-## 3. Vetor de parâmetros
+## 3. Vetor de parâmetros V2
 
     p = [
         log10_chi, d2_nm, n2_w, n2_2w,
@@ -25,7 +52,7 @@ MATLAB/Octave preservado é a referência física e numérica.
 chi = 10 ** log10_chi, d2_nm está em nm, e os índices da camada 3 são
 re_n3 + 1j * im_n3.
 
-## 4. Bounds e restrições físicas
+## 4. Bounds e restrições físicas V2
 
     -10 <= log10_chi <= 10
     0 <= d2_nm <= 20
@@ -229,11 +256,12 @@ mediana+IQR e best-fits padronizados estão em `results/weighted_reflection/`.
 
 ## 12. Estado dos testes
 
-    pytest: 159 passed
+    pytest: 179 passed (inclui 20 testes específicos do V3)
 
-A suíte cobre Fresnel, vidro, simulador, regressão MATLAB/Octave, constraints,
-objective, parameterization, Random Search, Differential Evolution, Genetic
-Algorithm e a infraestrutura comum de análise/plotting.
+A suíte cobre Fresnel, vidro, simulador V2, regressão MATLAB/Octave V2,
+constraints, objective, parameterization, Random Search, Differential
+Evolution, Genetic Algorithm, PSO, infraestrutura de análise/plotting e os
+testes internos do V3.
 
 ## 12.1. Visualização padronizada dos benchmarks
 
