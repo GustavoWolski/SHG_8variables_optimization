@@ -27,9 +27,8 @@ from optimization.objective import (
     objective,
 )
 from optimization.parameterization import (
-    DELTA_N,
-    INDEX_LOWER_BOUND,
-    INDEX_UPPER_BOUND,
+    ACTIVE_INDEX_LOWER_BOUND,
+    ACTIVE_INDEX_UPPER_BOUND,
     NORMALIZED_PARAMETER_COUNT,
     OXIDE_INDEX_LOWER_BOUND,
     OXIDE_INDEX_UPPER_BOUND,
@@ -84,9 +83,8 @@ __all__ = [
     "calculate_error_components",
     "evaluate",
     "objective",
-    "DELTA_N",
-    "INDEX_LOWER_BOUND",
-    "INDEX_UPPER_BOUND",
+    "ACTIVE_INDEX_LOWER_BOUND",
+    "ACTIVE_INDEX_UPPER_BOUND",
     "NORMALIZED_PARAMETER_COUNT",
     "OXIDE_INDEX_LOWER_BOUND",
     "OXIDE_INDEX_UPPER_BOUND",

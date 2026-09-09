@@ -23,9 +23,9 @@
 
 - [x] Centralizar os dados experimentais oficiais em `experiments/data.py`.
 - [x] Implementar somente `J = J_T + J_R`, sem penalidade de pico.
-- [x] Implementar e testar limites e dispersão normal em `optimization/constraints.py`.
+- [x] Implementar e testar os limites individuais em `optimization/constraints.py`.
 - [x] Garantir que cada avaliação detalhada retorne `J`, `J_T`, `J_R`, `p`, `T` e `R`.
-- [x] Implementar a parametrização comum `z ∈ [0,1]^8 → p` com dispersão normal por construção.
+- [x] Implementar a parametrização comum independente `z ∈ [0,1]^8 → p`.
 
 ## Otimização — baselines e algoritmos
 

@@ -18,7 +18,7 @@ from optimization.constraints import (
 )
 
 
-VALID_PARAMETERS = np.array([0.0, 10.0, 2.0, 3.0, 2.5, 1.0, 3.5, 2.0])
+VALID_PARAMETERS = np.array([0.0, 10.0, 1.1, 1.15, 2.5, 1.0, 3.5, 2.0])
 
 
 def _codes(parameters: np.ndarray) -> set[str]:
@@ -72,7 +72,7 @@ def test_each_parameter_above_its_upper_bound_is_invalid(index: int) -> None:
 
 @pytest.mark.parametrize(
     ("n2_w", "n2_2w"),
-    [(5.0, 2.0), (2.0, 2.0), (1.0, 6.0), (6.0, 1.0)],
+    [(1.2, 1.0), (1.1, 1.1), (1.0, 1.2), (1.2, 1.0)],
 )
 def test_oxide_indices_are_independent_within_their_inclusive_bounds(n2_w: float, n2_2w: float) -> None:
     parameters = VALID_PARAMETERS.copy()
@@ -82,32 +82,31 @@ def test_oxide_indices_are_independent_within_their_inclusive_bounds(n2_w: float
     assert "normal_dispersion_n2" not in _codes(parameters)
 
 
-def test_n3_real_normal_dispersion_must_be_strict() -> None:
+def test_layer_3_real_indices_are_independent() -> None:
     parameters = VALID_PARAMETERS.copy()
-    parameters[4] = parameters[6]
+    parameters[4:7:2] = (5.5, 2.0)
 
-    assert "normal_dispersion_n3" in _codes(parameters)
-    assert any("re_n3_w" in reason and "re_n3_2w" in reason for reason in invalid_reasons(parameters))
+    assert is_physically_valid(parameters)
+    assert "normal_dispersion_n3" not in _codes(parameters)
 
 
 @pytest.mark.parametrize(
     "parameters",
     [
-        np.array([-10.0, 0.0, 1.5, 6.0, 1.5, 0.0, 6.0, 0.0]),
-        np.array([10.0, 20.0, 1.5, 6.0, 1.5, 4.0, 6.0, 4.0]),
+        np.array([-10.0, 0.0, 1.0, 1.2, 1.5, 0.0, 6.0, 0.0]),
+        np.array([10.0, 20.0, 1.0, 1.2, 6.0, 4.0, 1.5, 4.0]),
     ],
 )
 def test_feasible_vectors_at_inclusive_box_limits_are_valid(parameters: np.ndarray) -> None:
     assert is_physically_valid(parameters)
 
 
-def test_layer_3_strict_dispersion_can_make_a_closed_box_boundary_infeasible() -> None:
+def test_layer_3_equal_real_indices_at_box_boundary_are_valid() -> None:
     parameters = VALID_PARAMETERS.copy()
     parameters[4] = 6.0
     parameters[6] = 6.0
 
-    assert "above_upper_bound" not in _codes(parameters)
-    assert "normal_dispersion_n3" in _codes(parameters)
+    assert is_physically_valid(parameters)
 
 
 @pytest.mark.parametrize("value", [np.nan, np.inf, -np.inf])

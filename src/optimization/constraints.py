@@ -36,8 +36,8 @@ class ConstraintViolation:
 PARAMETER_DEFINITIONS: Final[tuple[ParameterDefinition, ...]] = (
     ParameterDefinition("log10_chi", -10.0, 10.0, "log10(chi)"),
     ParameterDefinition("d2_nm", 0.0, 20.0, "nm"),
-    ParameterDefinition("n2_w", 1.0, 6.0, "dimensionless"),
-    ParameterDefinition("n2_2w", 1.0, 6.0, "dimensionless"),
+    ParameterDefinition("n2_w", 1.0, 1.2, "dimensionless"),
+    ParameterDefinition("n2_2w", 1.0, 1.2, "dimensionless"),
     ParameterDefinition("re_n3_w", 1.5, 6.0, "dimensionless"),
     ParameterDefinition("im_n3_w", 0.0, 4.0, "dimensionless"),
     ParameterDefinition("re_n3_2w", 1.5, 6.0, "dimensionless"),
@@ -109,8 +109,8 @@ def validate_parameter_vector(p: ArrayLike) -> NDArray[np.float64]:
     """Return ``p`` as a finite, real, one-dimensional vector of length eight.
 
     This function checks vector structure only. Use
-    :func:`validate_physical_parameters` when box bounds and normal dispersion
-    must also be enforced.
+    :func:`validate_physical_parameters` when box bounds must also be
+    enforced.
     """
 
     values, violations = _coerce_parameter_vector(p)
@@ -123,9 +123,8 @@ def validate_parameter_vector(p: ArrayLike) -> NDArray[np.float64]:
 def constraint_violations(p: ArrayLike) -> tuple[ConstraintViolation, ...]:
     """Return every structural or physical reason that ``p`` is invalid.
 
-    Box bounds are inclusive. Only the layer-3 real-index normal-dispersion
-    inequality is strict: ``re_n3_w < re_n3_2w``. The two oxide indices are
-    independent coordinates.
+    Box bounds are inclusive. All eight coordinates, including both real
+    layer-3 indices, are independent.
     """
 
     values, violations = _coerce_parameter_vector(p)
@@ -152,14 +151,6 @@ def constraint_violations(p: ArrayLike) -> tuple[ConstraintViolation, ...]:
                 )
             )
 
-    if not values[4] < values[6]:
-        reasons.append(
-            ConstraintViolation(
-                "normal_dispersion_n3",
-                f"re_n3_w={values[4]!r} must be strictly smaller than re_n3_2w={values[6]!r}.",
-                ("re_n3_w", "re_n3_2w"),
-            )
-        )
     return tuple(reasons)
 
 
@@ -170,7 +161,7 @@ def invalid_reasons(p: ArrayLike) -> tuple[str, ...]:
 
 
 def is_physically_valid(p: ArrayLike) -> bool:
-    """Return whether ``p`` satisfies the official bounds and dispersion rules."""
+    """Return whether ``p`` satisfies the official inclusive box bounds."""
 
     return not constraint_violations(p)
 

@@ -29,16 +29,13 @@ re_n3 + 1j * im_n3.
 
     -10 <= log10_chi <= 10
     0 <= d2_nm <= 20
-    1.0 <= n2_w, n2_2w <= 6
+    1.0 <= n2_w, n2_2w <= 1.2
     1.5 <= re_n3_w, re_n3_2w <= 6
     0 <= im_n3_w, im_n3_2w <= 4
 
-Dispersão normal estrita:
-
-    re_n3_w < re_n3_2w
-
-Os índices reais do óxido são independentes; inclusive `n2_w >= n2_2w` é
-permitido. Este é o **Search-space version 2**. Os baselines históricos
+Todos os índices reais são independentes; inclusive `n2_w >= n2_2w` e
+`re_n3_w >= re_n3_2w` são permitidos. Este é o **Search-space version 2,
+oxide 1–1.2**. Os baselines históricos
 abaixo pertencem ao **Search-space version 1**, que exigia
 `n2_w < n2_2w` e `1.5 <= n2_w, n2_2w <= 6`; eles são preservados apenas como
 histórico e não são diretamente comparáveis aos benchmarks v2.
@@ -77,11 +74,10 @@ física devem continuar passando essa regressão.
 
 Todos os algoritmos trabalham no mesmo cubo z ∈ [0,1]^8 e usam a transformação
 z → p de src/optimization/parameterization.py. Para o óxido,
-`n2_w = 1 + 5*z2` e `n2_2w = 1 + 5*z3`: são variáveis uniformes e
-independentes em `[1,6]`. Somente o par real da camada 3 é amostrado
-uniformemente no triângulo físico permitido. DELTA_N =
-5.684341886080802e-14 mantém a desigualdade estrita da camada 3 representável
-em float64. Detalhes da derivação estão em docs/decisions.md.
+`n2_w = 1 + 0.2*z2` e `n2_2w = 1 + 0.2*z3`: são variáveis uniformes e
+independentes em `[1,1.2]`. Os dois índices reais da camada 3 também são
+mapeados independentemente em `[1.5,6]`; não há transformação triangular nem
+restrição de dispersão normal. Detalhes da decisão estão em docs/decisions.md.
 
 ## 9. Benchmark computacional
 
@@ -229,7 +225,7 @@ mediana+IQR e best-fits padronizados estão em `results/weighted_reflection/`.
 
 ## 12. Estado dos testes
 
-    pytest: 159 passed
+    pytest: 158 passed
 
 A suíte cobre Fresnel, vidro, simulador, regressão MATLAB/Octave, constraints,
 objective, parameterization, Random Search, Differential Evolution, Genetic
@@ -292,10 +288,9 @@ quatro pesos) e quatro comparações visuais do efeito do peso. O relatório e
 
 ## 15. Ponto exato de retomada
 
-O checkpoint encerra após a atualização das constraints e parametrização para
-Search-space version 2, validação pytest/MATLAB × Python, reexecução de RS,
-DE e GA, implementação/testes/benchmark do PSO (cinco seeds, 50.000 avaliações
-por seed), e screening complementar de pesos de reflexão (80 buscas, 4 milhões
-de avaliações) com figuras e relatório. Não iniciar CMA-ES, promover pesos a
-objetivo definitivo, nem iniciar experimentos comparativos finais sem
-autorização explícita e sem a decisão do budget final.
+O checkpoint encerra após a redução dos índices do óxido para `[1.0,1.2]`, a
+remoção da restrição de dispersão normal da camada ativa e a validação da suíte
+completa (158 passed). O modelo físico, o objetivo `J = J_T + J_R`, os
+algoritmos e todos os resultados existentes foram preservados; não houve novo
+benchmark. A próxima execução de benchmark deve usar um diretório novo, como
+`results/search_space_v2_oxide_1_1p2/`.

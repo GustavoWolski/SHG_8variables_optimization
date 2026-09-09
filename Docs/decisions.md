@@ -207,8 +207,7 @@ budget definitivo.
 ## D-013 — Parametrização normalizada comum e dispersão estrita (Search-space version 1; histórico)
 
 O texto a seguir registra a parametrização usada pelos resultados v1. A
-parametrização atual do óxido é a da D-019; a triangular continua válida
-somente para a camada 3.
+parametrização atual é a da D-022; este mapa triangular não é mais usado.
 
 Todo algoritmo futuro trabalhará exclusivamente em `z ∈ [0, 1]^8` e chamará
 `optimization/parameterization.py` para obter `p`. Os quatro parâmetros
@@ -390,7 +389,7 @@ atuais não satisfazem esse critério, portanto ela não foi criada.
 dos três benchmarks e confirmou que permanecem idênticos. Nenhuma otimização
 foi reexecutada e nenhum resultado científico foi recalculado.
 
-## D-019 — Search-space version 2: óxido independente
+## D-019 — Search-space version 2: óxido independente (configuração inicial; superada pela D-022)
 
 Os baselines originalmente registrados (Random Search, Differential Evolution
 e Genetic Algorithm, seeds 1–5, 50.000 avaliações físicas por seed) passam a
@@ -414,7 +413,8 @@ de busca e ser salvo separadamente sob `results/search_space_v2/`.
 O rebenchmark v2 foi concluído com seeds 1–5 e 50.000 avaliações físicas por
 seed para cada algoritmo. Os artefatos e as figuras read-only estão em
 `results/search_space_v2/`; `PROJECT_STATE.md` registra os resultados
-numéricos do checkpoint.
+numéricos do checkpoint. Esta configuração inicial foi superada pela D-022,
+que preserva os resultados e restringe o óxido a `[1.0,1.2]`.
 
 ## D-020 — Particle Swarm Optimization no Search-space version 2
 
@@ -458,6 +458,25 @@ Os artefatos de cada algoritmo × peso, as figuras de trade-off, os best-fits
 padronizados e o relatório estão em `results/weighted_reflection/`. A análise
 é descritiva: toda conclusão compara separadamente `J_T` e `J_R`, sem inferência
 estatística formal ou escolha definitiva de peso.
+
+## D-022 — Search Space 2 com índices do óxido em 1.0–1.2
+
+O novo experimento mantém o óxido explícito no modelo de quatro camadas e o
+vetor físico de oito coordenadas. Somente os intervalos dos índices reais do
+óxido são alterados, de `[1,6]` para `[1.0,1.2]` em `ω` e `2ω`:
+`n2_w = 1.0 + 0.2*z[2]` e `n2_2w = 1.0 + 0.2*z[3]`.
+
+Os índices reais da camada ativa continuam com seus bounds individuais em
+`[1.5,6]`, mas passam a ser independentes: não há `re_n3_w < re_n3_2w`,
+`DELTA_N` ou transformação triangular. O vetor normalizado permanece
+`z ∈ [0,1]^8`, com mapeamento independente para cada coordenada.
+
+Esta decisão não modifica simulador, equações, dados experimentais, espessura
+do óxido, algoritmos, budgets, seeds ou critérios de parada. O objetivo
+permanece exatamente `J = J_T + J_R`. Nenhum benchmark é executado nesta
+alteração; os resultados existentes são preservados integralmente. Futuras
+execuções devem usar um diretório novo, por exemplo
+`results/search_space_v2_oxide_1_1p2/`.
 
 ## Ambiguidades abertas
 

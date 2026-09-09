@@ -15,7 +15,7 @@ from optimization.objective import (
 )
 
 
-VALID_PARAMETERS = np.array([0.0, 10.0, 2.0, 3.0, 2.5, 1.0, 3.5, 2.0])
+VALID_PARAMETERS = np.array([0.0, 10.0, 1.1, 1.15, 2.5, 1.0, 3.5, 2.0])
 
 
 def test_error_components_are_separate_sums_with_the_official_normalizations() -> None:
@@ -65,12 +65,12 @@ def test_same_input_produces_the_same_detailed_result() -> None:
 
 def test_invalid_vector_is_rejected_before_a_detailed_evaluation() -> None:
     invalid = VALID_PARAMETERS.copy()
-    invalid[4] = invalid[6]
+    invalid[2] = 1.21
 
-    with pytest.raises(InvalidParameterError, match="re_n3_w") as error:
+    with pytest.raises(InvalidParameterError, match="n2_w") as error:
         evaluate(invalid)
 
-    assert {violation.code for violation in error.value.violations} == {"normal_dispersion_n3"}
+    assert {violation.code for violation in error.value.violations} == {"above_upper_bound"}
 
 
 def test_stateful_evaluator_counts_each_valid_physical_call() -> None:
@@ -86,9 +86,9 @@ def test_stateful_evaluator_counts_each_valid_physical_call() -> None:
 def test_rejected_candidate_does_not_increment_physical_evaluation_count() -> None:
     evaluator = ObjectiveEvaluator()
     invalid = VALID_PARAMETERS.copy()
-    invalid[4] = invalid[6]
+    invalid[3] = 1.21
 
-    with pytest.raises(InvalidParameterError, match="re_n3_w"):
+    with pytest.raises(InvalidParameterError, match="n2_2w"):
         evaluator.objective(invalid)
 
     assert evaluator.n_evaluations == 0

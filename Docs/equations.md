@@ -954,30 +954,21 @@ No projeto, ambas serão parâmetros importantes da otimização.
 
 ---
 
-# Equação 17 — Restrição de dispersão normal
+# Equação 17 — Domínio dos índices na otimização
 
 ## O que faz?
 
-Impõe uma condição física sobre os índices reais recuperados pela otimização.
-
-Na dispersão normal adotada no projeto:
-
-$$
-n(\omega)<n(2\omega)
-$$
+Define os limites individuais dos índices reais recuperados pela otimização.
 
 ## Para a camada 2
 
 Os índices reais do óxido são coordenadas independentes, cada uma no
-intervalo fechado $[1,6]$. Não há condição de ordenação para esta camada.
+intervalo fechado $[1.0,1.2]$. Não há condição de ordenação para esta camada.
 
 ## Para a camada 3
 
-$$
-\operatorname{Re}(n_{3,\omega})
-<
-\operatorname{Re}(n_{3,2\omega})
-$$
+Os índices reais da camada ativa são coordenadas independentes, cada uma no
+intervalo fechado $[1.5,6]$. Não há condição de ordenação entre elas.
 
 ## O que entra?
 
@@ -985,25 +976,13 @@ $$
 
 ## O que sai?
 
-- solução fisicamente válida ou inválida.
+- vetor dentro ou fora dos limites individuais.
 
 ## Intuição
 
-Para a camada 3, como $2\omega$ possui frequência maior que $\omega$, a
-condição adotada para a região de dispersão normal exige que o índice real
-aumente com a frequência. Esta condição não é imposta ao óxido.
-
-Uma forma de garantir isso automaticamente na otimização é:
-
-$$
-n(2\omega)=n(\omega)+\Delta n
-$$
-
-com:
-
-$$
-\Delta n>0.
-$$
+Neste experimento não se infere nem se impõe uma relação de dispersão normal
+entre os dois índices reais da camada ativa; ambos variam livremente dentro de
+seus limites individuais.
 
 ---
 

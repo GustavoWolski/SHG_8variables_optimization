@@ -6,6 +6,7 @@ from physics.simulator import shg_4layers, shg_mos2_ratios, simulate
 
 
 P0 = np.array([0.0, 10.0, 2.10, 2.43, 2.04, 0.70, 1.42, 0.80])
+P_SEARCH_SPACE = np.array([0.0, 10.0, 1.10, 1.15, 5.50, 0.70, 2.00, 0.80])
 EXPERIMENTAL_THICKNESSES_NM = np.array([65, 80, 100, 150, 190, 250, 300, 400, 500, 600])
 
 
@@ -38,6 +39,16 @@ def test_simulation_is_deterministic() -> None:
     first = simulate(P0, EXPERIMENTAL_THICKNESSES_NM)
     second = simulate(P0, EXPERIMENTAL_THICKNESSES_NM)
 
+    np.testing.assert_array_equal(first.T, second.T)
+    np.testing.assert_array_equal(first.R, second.R)
+
+
+def test_simulate_is_finite_and_deterministic_for_valid_reversed_layer_3_indices() -> None:
+    first = simulate(P_SEARCH_SPACE, EXPERIMENTAL_THICKNESSES_NM)
+    second = simulate(P_SEARCH_SPACE, EXPERIMENTAL_THICKNESSES_NM)
+
+    assert np.all(np.isfinite(first.T))
+    assert np.all(np.isfinite(first.R))
     np.testing.assert_array_equal(first.T, second.T)
     np.testing.assert_array_equal(first.R, second.R)
 

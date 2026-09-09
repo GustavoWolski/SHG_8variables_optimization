@@ -168,41 +168,14 @@ $$
 
 # 7. Restrição de Dispersão Normal
 
-Na condição adotada de dispersão normal para a camada ativa:
-
-$$
-n(\omega)<n(2\omega)
-$$
-
-Portanto:
-
-$$
-\operatorname{Re}(n_{3,\omega})<\operatorname{Re}(n_{3,2\omega})
-$$
-
-Os índices reais do óxido, $n_{2,\omega}$ e $n_{2,2\omega}$, são variáveis
-independentes em $[1,6]$ e não são ordenados. A relação acima permanece
-obrigatória para a camada 3.
-
-A estratégia preferencial é utilizar parametrização ou constraints que evitem avaliações inválidas. Uma possível reparametrização é:
-
-$$
-n(2\omega)=n(\omega)+\Delta n
-$$
-
-com:
-
-$$
-\Delta n>0
-$$
-
-e mantendo:
-
-$$
-n(2\omega)\leq6
-$$
-
-A mesma lógica de tratamento de restrições deverá ser usada de forma justa em todos os algoritmos.
+No experimento Search Space 2 com óxido restrito, os índices reais do óxido,
+$n_{2,\omega}$ e $n_{2,2\omega}$, são variáveis independentes em
+$[1.0,1.2]$. Os índices reais da camada ativa,
+$\operatorname{Re}(n_{3,\omega})$ e
+$\operatorname{Re}(n_{3,2\omega})$, também são independentes em $[1.5,6]$.
+Não há, neste experimento, restrição de dispersão normal nem parametrização
+triangular entre os índices da camada ativa. A mesma parametrização
+independente deverá ser usada de forma justa em todos os algoritmos.
 
 ---
 
