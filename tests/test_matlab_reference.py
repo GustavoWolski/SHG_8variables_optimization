@@ -1,42 +1,29 @@
-"""Regression check against the versioned MATLAB/Octave export."""
+"""Document the intentional incompatibility with the versioned legacy MATLAB fixtures."""
 
 import csv
-from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from physics.simulator import simulate
 
 
 REFERENCE_DIRECTORY = Path(__file__).parent / "reference"
-RELATIVE_TOLERANCE = 1e-12
-ABSOLUTE_TOLERANCE = 1e-28
 
 
-def test_simulator_matches_versioned_matlab_transmission_and_reflection() -> None:
+def test_versioned_matlab_fixture_is_the_previous_eight_parameter_model() -> None:
     with (REFERENCE_DIRECTORY / "matlab_reference_parameters.csv").open(newline="", encoding="utf-8") as stream:
-        parameters = {
-            row["case"]: np.array(
-                [
-                    float(row["log10_chi"]), float(row["d2_nm"]), float(row["n2_w"]), float(row["n2_2w"]),
-                    float(row["re_n3_w"]), float(row["im_n3_w"]), float(row["re_n3_2w"]), float(row["im_n3_2w"]),
-                ]
-            )
-            for row in csv.DictReader(stream)
-        }
-    references: dict[str, list[dict[str, float]]] = defaultdict(list)
-    with (REFERENCE_DIRECTORY / "matlab_reference_cases.csv").open(newline="", encoding="utf-8") as stream:
-        for row in csv.DictReader(stream):
-            references[row["case"]].append(
-                {name: float(row[name]) for name in ("thickness_nm", "T", "R")}
-            )
+        fieldnames = csv.DictReader(stream).fieldnames
 
-    for case_name, rows in references.items():
-        result = simulate(parameters[case_name], [row["thickness_nm"] for row in rows])
-        np.testing.assert_allclose(
-            result.T, [row["T"] for row in rows], rtol=RELATIVE_TOLERANCE, atol=ABSOLUTE_TOLERANCE
-        )
-        np.testing.assert_allclose(
-            result.R, [row["R"] for row in rows], rtol=RELATIVE_TOLERANCE, atol=ABSOLUTE_TOLERANCE
-        )
+    assert fieldnames is not None
+    assert "d2_nm" in fieldnames
+    assert "n2_w" in fieldnames
+    assert "n2_2w" in fieldnames
+    assert "delta_d3_nm" not in fieldnames
+
+
+def test_final_simulator_rejects_legacy_eight_parameter_vector() -> None:
+    legacy_p = np.array([0.0, 10.0, 2.10, 2.43, 2.04, 0.70, 1.42, 0.80])
+    with pytest.raises(ValueError, match="exactly the six final-model parameters"):
+        simulate(legacy_p, [65.0])

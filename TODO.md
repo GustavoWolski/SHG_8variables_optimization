@@ -25,7 +25,10 @@
 - [x] Implementar somente `J = J_T + J_R`, sem penalidade de pico.
 - [x] Implementar e testar os limites individuais em `optimization/constraints.py`.
 - [x] Garantir que cada avaliação detalhada retorne `J`, `J_T`, `J_R`, `p`, `T` e `R`.
-- [x] Implementar a parametrização comum independente `z ∈ [0,1]^8 → p`.
+- [x] Implementar a parametrização final independente `z ∈ [0,1]^6 → p`.
+- [x] Fixar o óxido em `d2 = 10 nm` e `n2_w = n2_2w = 1` fora do search space.
+- [x] Aplicar `d3_effective_nm = max(d3_nominal_nm + delta_d3_nm, 0)`.
+- [x] Registrar que o MATLAB versionado é anterior e não contém `p(9)`.
 
 ## Otimização — baselines e algoritmos
 

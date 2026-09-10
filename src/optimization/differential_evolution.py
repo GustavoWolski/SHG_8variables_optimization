@@ -139,7 +139,7 @@ def differential_evolution(
     configuration: DifferentialEvolutionConfiguration = DEFAULT_CONFIGURATION,
     weights: ObjectiveWeights = DEFAULT_OBJECTIVE_WEIGHTS,
 ) -> DifferentialEvolutionResult:
-    """Run pure DE in ``z ∈ [0, 1]^8`` with an exact physical-evaluation budget.
+    """Run pure DE in ``z ∈ [0, 1]^6`` with an exact physical-evaluation budget.
 
     SciPy's public convenience function does not expose ``maxfun``. This uses
     its DE solver with ``maxfun=budget`` and serial deferred updates, then

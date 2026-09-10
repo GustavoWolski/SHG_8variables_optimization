@@ -12,7 +12,7 @@ D_NM: Final[NDArray[np.float64]] = np.array(
     [65.0, 80.0, 100.0, 150.0, 190.0, 250.0, 300.0, 400.0, 500.0, 600.0],
     dtype=np.float64,
 )
-"""Measured total thicknesses in nm, in the official experimental order."""
+"""Nominal active-layer thicknesses in nm, in the official experimental order."""
 
 T_EXP: Final[NDArray[np.float64]] = np.array(
     [2192.89, 2133.53, 2522.53, 3857.56, 3649.85, 1988.13, 359.05, 59.64, 37.68, 16.17],

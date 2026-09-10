@@ -85,7 +85,7 @@ def test_elitism_carries_stored_results_without_extra_evaluations() -> None:
 
 
 def test_crossover_and_mutation_clip_to_normalized_bounds() -> None:
-    first = np.array([0.0, 1.0, 0.2, 0.8, 0.4, 0.6, 0.3, 0.7])
+    first = np.array([0.0, 1.0, 0.2, 0.8, 0.4, 0.6])
     second = 1.0 - first
     rng = np.random.default_rng(12)
     child_one, child_two = _simulated_binary_crossover(
@@ -107,8 +107,8 @@ def test_crossover_and_mutation_clip_to_normalized_bounds() -> None:
     assert np.all((0.0 <= mutated) & (mutated <= 1.0))
 
 
-def test_boundary_handling_keeps_strict_triangle_vertices_representable() -> None:
-    normalized = _clip_normalized(np.array([1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0]))
+def test_boundary_handling_keeps_unit_cube_vertices_representable() -> None:
+    normalized = _clip_normalized(np.array([1.0, 1.0, 0.0, 1.0, 0.0, 1.0]))
     physical = to_physical(normalized)
 
     assert np.all((0.0 <= normalized) & (normalized <= 1.0))

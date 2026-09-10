@@ -1,4 +1,4 @@
-"""Faithful Python port of the MATLAB four-layer SHG simulator core."""
+"""Final four-layer SHG model derived from the validated MATLAB core."""
 
 from dataclasses import dataclass
 from typing import Iterable
@@ -14,6 +14,9 @@ from physics.transfer_matrix import column_vector, interface_matrix, propagation
 DEFAULT_WAVELENGTH_M = 1560e-9
 EPS0 = 8.8541878176e-12
 C = 3e8
+D2_FIXED_NM = 10.0
+N2_W_FIXED = 1.0
+N2_2W_FIXED = 1.0
 
 
 @dataclass(frozen=True)
@@ -26,6 +29,9 @@ class SimulationDiagnostics:
     n32w: complex
     d2_m: float
     d3_m: float
+    d3_nominal_nm: float
+    d3_effective_nm: float
+    delta_d3_nm: float
     phase21w: complex
     phase31w: complex
     phase22w: complex
@@ -97,21 +103,27 @@ def _as_thickness_array(thickness_nm: float | Iterable[float] | NDArray[np.float
 
 def _parameter_values(
     p: Iterable[float] | NDArray[np.floating],
-) -> tuple[float, float, float, complex, complex, complex]:
-    """Extract the eight MATLAB parameters without applying physical constraints."""
+) -> tuple[float, float, float, complex, complex, complex, complex]:
+    """Extract the six final-model parameters without applying search constraints."""
 
     parameters = np.asarray(p, dtype=np.float64).reshape(-1)
-    if parameters.size < 8:
-        raise ValueError("p must contain at least the eight MATLAB model parameters.")
+    if parameters.size != 6:
+        raise ValueError("p must contain exactly the six final-model parameters.")
 
     chi2 = 10 ** parameters[0]
-    d2_nm = parameters[1]
-    d2 = d2_nm * 1e-9
-    n21w = complex(parameters[2])
-    n22w = complex(parameters[3])
-    n31w = complex(parameters[4], parameters[5])
-    n32w = complex(parameters[6], parameters[7])
-    return chi2, d2_nm, d2, n21w, n22w, n31w, n32w
+    delta_d3_nm = parameters[1]
+    d2 = D2_FIXED_NM * 1e-9
+    n21w = complex(N2_W_FIXED)
+    n22w = complex(N2_2W_FIXED)
+    n31w = complex(parameters[2], parameters[3])
+    n32w = complex(parameters[4], parameters[5])
+    return chi2, delta_d3_nm, d2, n21w, n22w, n31w, n32w
+
+
+def effective_active_thickness_nm(d3_nominal_nm: float, delta_d3_nm: float) -> float:
+    """Apply the global active-layer thickness offset and truncate at zero."""
+
+    return max(float(d3_nominal_nm) + float(delta_d3_nm), 0.0)
 
 
 def shg_4layers(
@@ -123,9 +135,9 @@ def shg_4layers(
 ) -> RawSimulationResult:
     """Port MATLAB ``shg_4layers`` with its explicit thickness loop.
 
-    ``thickness_nm`` is MATLAB's ``Md3`` (the measured total thickness), not
-    the net active-layer thickness. Set ``diagnostics=True`` only for a single
-    thickness to retrieve intermediate fields and matrices.
+    ``thickness_nm`` is the nominal active-layer thickness supplied by the
+    experimental data. The same ``delta_d3_nm`` from ``p`` is applied to every
+    point. Set ``diagnostics=True`` only for one thickness.
     """
 
     thicknesses = _as_thickness_array(thickness_nm)
@@ -133,7 +145,7 @@ def shg_4layers(
         raise ValueError("diagnostics=True requires exactly one thickness value.")
 
     k0 = 2 * np.pi / wavelength_m
-    chi2, d2_nm, d2, n21w, n22w, n31w, n32w = _parameter_values(p)
+    chi2, delta_d3_nm, d2, n21w, n22w, n31w, n32w = _parameter_values(p)
 
     n11w = 1.0 + 0j
     n12w = 1.0 + 0j
@@ -145,8 +157,9 @@ def shg_4layers(
     i_1 = np.zeros(thicknesses.shape, dtype=np.float64)
     diagnostic_result: SimulationDiagnostics | None = None
 
-    for index, dnm in enumerate(thicknesses):
-        d3 = (dnm - d2_nm) * 1e-9
+    for index, d3_nominal_nm in enumerate(thicknesses):
+        d3_effective_nm = effective_active_thickness_nm(d3_nominal_nm, delta_d3_nm)
+        d3 = d3_effective_nm * 1e-9
 
         phase21w = n21w * k0 * d2
         phase31w = n31w * k0 * d3
@@ -212,6 +225,9 @@ def shg_4layers(
                 n32w=n32w,
                 d2_m=float(d2),
                 d3_m=float(d3),
+                d3_nominal_nm=float(d3_nominal_nm),
+                d3_effective_nm=d3_effective_nm,
+                delta_d3_nm=float(delta_d3_nm),
                 phase21w=phase21w,
                 phase31w=phase31w,
                 phase22w=phase22w,

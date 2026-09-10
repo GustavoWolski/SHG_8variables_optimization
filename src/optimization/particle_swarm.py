@@ -1,7 +1,7 @@
 """Exact-budget global-best Particle Swarm Optimization in normalized space.
 
 The optimizer contains no physical-model logic. It evolves particles only in
-``z ∈ [0, 1]^8`` and delegates the shared mapping and every physical call to
+``z ∈ [0, 1]^6`` and delegates the shared mapping and every physical call to
 ``to_physical`` and ``ObjectiveEvaluator``, respectively.
 """
 

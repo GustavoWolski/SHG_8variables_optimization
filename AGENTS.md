@@ -42,24 +42,22 @@ dependem de autorização explícita.
 
 ## Parâmetros e unidades
 
-`p = [log10_chi, d2_nm, n2_w, n2_2w, re_n3_w, im_n3_w, re_n3_2w, im_n3_2w]`.
+`p = [log10_chi, delta_d3_nm, n3_w, k3_w, n3_2w, k3_2w]`.
 
 - `chi = 10 ** log10_chi`;
-- `d2_nm` está em nm; internamente, o MATLAB converte espessuras para m;
+- `d2_nm = 10.0`, `n2_w = 1.0` e `n2_2w = 1.0` são constantes fora do search space;
+- `d3_effective_nm = max(d3_nominal_nm + delta_d3_nm, 0.0)`;
 - `lambda = 1560 nm` no experimento e `1560e-9 m` no MATLAB;
-- índices de camada 3 são complexos: `re + 1j * im`;
+- índices de camada 3 são complexos: `n3 + 1j * k3`;
 - preservar `eps0 = 8.8541878176e-12 F/m` e `c = 3e8 m/s`.
 
 ## Limites e validade física futura
 
 - `-10 <= log10_chi <= 10`;
-- `0 <= d2_nm <= 20`;
-- `1 <= n2_w, n2_2w <= 6`;
-- `1.5 <= re_n3_w, re_n3_2w <= 6`;
-- `0 <=` partes imaginárias `<= 4`;
-- `n2_w` e `n2_2w` são independentes, sem ordenação;
-- dispersão normal estrita somente na camada 3:
-  `re_n3_w < re_n3_2w`.
+- `-20 <= delta_d3_nm <= 20`;
+- `1.5 <= n3_w, n3_2w <= 6`;
+- `0 <= k3_w, k3_2w <= 4`;
+- `n3_w` e `n3_2w` são independentes, sem ordenação ou restrição de dispersão.
 
 ## Objetivo e experimentos futuros
 
@@ -74,7 +72,10 @@ validade física.
 
 ## Critério de avanço
 
-Antes de otimizar, comparar o mesmo vetor de parâmetros em MATLAB e Python
-para todos os pontos de `T` e `R`, além de `J_T`, `J_R` e `J`, com tolerância
-numérica justificada. A lógica de produção deve ficar em módulos Python com
-type hints e testes pytest; notebooks são apenas exploratórios.
+O MATLAB versionado é anterior à configuração final: usa oito parâmetros e
+não contém `p(9)`. Sua regressão permanece histórica e não deve ser apresentada
+como validação literal do modelo final. A configuração corrente segue a
+orientação final do professor e deve ser validada por testes determinísticos
+até que uma referência MATLAB final seja disponibilizada. A lógica de produção
+deve ficar em módulos Python com type hints e testes pytest; notebooks são
+apenas exploratórios.

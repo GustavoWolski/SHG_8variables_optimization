@@ -257,7 +257,7 @@ def genetic_algorithm(
     configuration: GeneticAlgorithmConfiguration = DEFAULT_CONFIGURATION,
     weights: ObjectiveWeights = DEFAULT_OBJECTIVE_WEIGHTS,
 ) -> GeneticAlgorithmResult:
-    """Run a real-coded GA in z ∈ [0,1]^8 with an exact physical-call budget.
+    """Run a real-coded GA in z ∈ [0,1]^6 with an exact physical-call budget.
 
     Uniform initialization, tournament selection, simulated binary crossover,
     polynomial mutation and one-individual elitism operate only in normalized

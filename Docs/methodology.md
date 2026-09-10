@@ -19,7 +19,7 @@ $$
 
 onde:
 
-- $\mathbf{p}$ é o vetor dos oito parâmetros físicos;
+- $\mathbf{p}$ é o vetor dos seis parâmetros físicos da configuração final;
 - $\Omega$ é o espaço de busca sujeito às restrições físicas;
 - $J(\mathbf{p})$ é a função objetivo conjunta de transmissão e reflexão.
 
@@ -54,10 +54,11 @@ $$
 \text{ar}\;|\;\text{óxido}\;|\;\text{camada ativa}\;|\;\text{vidro}
 $$
 
-A espessura efetiva da camada ativa é:
+A espessura nominal da camada ativa vem dos dados experimentais. A espessura
+efetivamente usada na física é:
 
 $$
-d_{\text{ativa}}=d_{\text{medido}}-d_2
+d_{3,\text{efetiva}}=\max(d_{3,\text{nominal}}+\Delta d_3,0)
 $$
 
 ---
@@ -97,13 +98,11 @@ $$
 \mathbf{p}=
 [
 \log_{10}(\chi),
- d_2,
- n_{2,\omega},
- n_{2,2\omega},
- \operatorname{Re}(n_{3,\omega}),
- \operatorname{Im}(n_{3,\omega}),
- \operatorname{Re}(n_{3,2\omega}),
- \operatorname{Im}(n_{3,2\omega})
+ \Delta d_3,
+ n_{3,\omega},
+ k_{3,\omega},
+ n_{3,2\omega},
+ k_{3,2\omega}
 ]
 $$
 
@@ -133,22 +132,15 @@ $$
 
 O logaritmo é utilizado apenas para tornar o espaço de otimização numericamente mais adequado.
 
-## 6.2 Espessura do óxido
+## 6.2 Correção global da espessura ativa
 
 $$
-0\leq d_2\leq20\text{ nm}
+-20\leq\Delta d_3\leq20\text{ nm}
 $$
+
+O óxido é fixo: $d_2=10$ nm e $n_{2,\omega}=n_{2,2\omega}=1$.
 
 ## 6.3 Partes reais dos índices
-
-$$
-1.5\leq n_{\text{real}}\leq6
-$$
-
-Logo:
-
-$$
-1.0\leq n_{2,\omega},\;n_{2,2\omega}\leq6
 
 $$
 1.5\leq\operatorname{Re}(n_{3,\omega}),\;\operatorname{Re}(n_{3,2\omega})\leq6
@@ -166,11 +158,9 @@ $$
 
 ---
 
-# 7. Restrição de Dispersão Normal
+# 7. Independência dos índices reais
 
-No experimento Search Space 2 com óxido restrito, os índices reais do óxido,
-$n_{2,\omega}$ e $n_{2,2\omega}$, são variáveis independentes em
-$[1.0,1.2]$. Os índices reais da camada ativa,
+Na configuração final, os índices reais da camada ativa,
 $\operatorname{Re}(n_{3,\omega})$ e
 $\operatorname{Re}(n_{3,2\omega})$, também são independentes em $[1.5,6]$.
 Não há, neste experimento, restrição de dispersão normal nem parametrização
@@ -272,7 +262,7 @@ Cada avaliação completa deverá permitir recuperar:
 - $T^{teo}$;
 - $R^{teo}$.
 
-Cada execução deverá registrar:
+Cada execução futura deverá registrar:
 
 - algoritmo;
 - seed;
@@ -281,7 +271,7 @@ Cada execução deverá registrar:
 - $J$ final;
 - $J_T$ final;
 - $J_R$ final;
-- oito parâmetros encontrados;
+- seis parâmetros encontrados;
 - curva de convergência;
 - critério de parada;
 - validade física.
@@ -290,35 +280,17 @@ Cada execução deverá registrar:
 
 # 12. Validação MATLAB → Python
 
-Esta etapa é obrigatória antes da comparação dos algoritmos.
+A formulação anterior de oito parâmetros foi validada contra o MATLAB
+versionado com `rtol=1e-12` e `atol=1e-28`, alcançando erros de ordem
+`1e-14` a `1e-15`. Essa equivalência permanece registrada historicamente.
 
-Para o mesmo vetor de parâmetros $\mathbf{p}_{test}$, deverá ser verificado:
-
-$$
-T_{\text{Python}}\approx T_{\text{MATLAB}}
-$$
-
-$$
-R_{\text{Python}}\approx R_{\text{MATLAB}}
-$$
-
-$$
-J_{T,\text{Python}}\approx J_{T,\text{MATLAB}}
-$$
-
-$$
-J_{R,\text{Python}}\approx J_{R,\text{MATLAB}}
-$$
-
-$$
-J_{\text{Python}}\approx J_{\text{MATLAB}}
-$$
-
-Nenhum algoritmo novo deverá ser considerado validado antes da equivalência numérica do simulador.
-
-A regressão automática atual usa `rtol=1e-12` e `atol=1e-28`, valores
-conservadores diante dos erros observados de ordem 1e-14 a 1e-15. Qualquer
-alteração futura dessa tolerância deve ser justificada pela validação física.
+A configuração final confirmada pelo professor, porém, contém a correção
+conceitualmente equivalente a `p(9)` e o óxido fixo, elementos ausentes no
+MATLAB versionado. Portanto, ela não deve ser apresentada como reprodução
+literal desse arquivo antigo. Até que a versão MATLAB final esteja disponível,
+a validação corrente cobre a parametrização de seis dimensões, as constantes
+do óxido, o truncamento de espessura, determinismo, finitude e a identidade
+exata `J = J_T + J_R`.
 
 ---
 
@@ -485,7 +457,7 @@ $$
 
 ## 20.4 Estabilidade Física
 
-Para cada um dos oito parâmetros:
+Para cada um dos seis parâmetros:
 
 - média;
 - mediana;
@@ -567,11 +539,11 @@ A escolha definitiva deverá ser justificada de acordo com a estrutura final dos
 Uma solução só será considerada válida se respeitar:
 
 $$
-0\leq d_2\leq20\text{ nm}
+-20\leq\Delta d_3\leq20\text{ nm}
 $$
 
 $$
-1.0\leq n_{2,\omega},n_{2,2\omega}\leq6,
+d_2=10\text{ nm},\qquad n_{2,\omega}=n_{2,2\omega}=1,
 \qquad 1.5\leq\operatorname{Re}(n_3)\leq6
 $$
 
@@ -579,9 +551,8 @@ $$
 0\leq k\leq4
 $$
 
-$$
-n(\omega)<n(2\omega)
-$$
+Não há condição de ordenação entre os índices reais em $\omega$ e
+$2\omega$ da camada ativa.
 
 Além disso:
 
@@ -717,13 +688,11 @@ J_T: ...
 J_R: ...
 
 log10_chi: ...
-d2_nm: ...
-n2_w: ...
-n2_2w: ...
-re_n3_w: ...
-im_n3_w: ...
-re_n3_2w: ...
-im_n3_2w: ...
+delta_d3_nm: ...
+n3_w: ...
+k3_w: ...
+n3_2w: ...
+k3_2w: ...
 
 runtime_s: ...
 n_evaluations: ...
@@ -784,13 +753,11 @@ $$
 \mathbf{p}=
 [
 \log_{10}(\chi),
- d_2,
- n_{2,\omega},
- n_{2,2\omega},
- \operatorname{Re}(n_{3,\omega}),
- \operatorname{Im}(n_{3,\omega}),
- \operatorname{Re}(n_{3,2\omega}),
- \operatorname{Im}(n_{3,2\omega})
+ \Delta d_3,
+ n_{3,\omega},
+ k_{3,\omega},
+ n_{3,2\omega},
+ k_{3,2\omega}
 ]
 $$
 
@@ -809,22 +776,27 @@ $$
 $$
 
 $$
-0\leq d_2\leq20\text{ nm}
+-20\leq\Delta d_3\leq20\text{ nm}
 $$
 
 $$
-1.5\leq n_{\text{real}}\leq6
+d_2=10\text{ nm},\qquad n_{2,\omega}=n_{2,2\omega}=1
+$$
+
+$$
+1.5\leq\operatorname{Re}(n_{3,\omega}),\;
+\operatorname{Re}(n_{3,2\omega})\leq6
 $$
 
 $$
 0\leq k\leq4
 $$
 
-## Dispersão normal
+## Índices reais independentes
 
-$$
-\operatorname{Re}(n_{3,\omega})<\operatorname{Re}(n_{3,2\omega})
-$$
+Não há restrição de dispersão normal entre
+$\operatorname{Re}(n_{3,\omega})$ e
+$\operatorname{Re}(n_{3,2\omega})$.
 
 ## Regra metodológica central
 

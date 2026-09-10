@@ -251,8 +251,10 @@ def load_algorithm_results(spec: AlgorithmSpec) -> AlgorithmResults:
         )
         if run.budget <= 0 or run.n_evaluations != run.budget:
             raise ValueError(f"Seed {run.seed} has an inconsistent physical-evaluation budget in {runs_path}")
-        if run.best_p.size != 8:
-            raise ValueError(f"Seed {run.seed} does not contain eight physical parameters in {runs_path}")
+        if run.best_p.size not in (6, 8):
+            raise ValueError(
+                f"Seed {run.seed} contains neither six current nor eight legacy physical parameters in {runs_path}"
+            )
         if run.T_theoretical.size != D_NM.size or run.R_theoretical.size != D_NM.size:
             raise ValueError(f"Seed {run.seed} curve length differs from experimental data in {runs_path}")
         if not np.isclose(run.best_J, run.best_J_T + run.best_J_R, rtol=1e-12, atol=1e-14):

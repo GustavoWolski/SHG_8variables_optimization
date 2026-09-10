@@ -48,15 +48,6 @@ class BenchmarkResult:
     evaluations_per_second: float
 
 
-def _ordered_pair(rng: np.random.Generator) -> tuple[float, float]:
-    """Sample a strictly ordered pair within the inclusive index box bounds."""
-
-    lower = float(rng.uniform(1.5, 6.0))
-    upper_lower_bound = float(np.nextafter(lower, 6.0))
-    upper = float(rng.uniform(upper_lower_bound, 6.0))
-    return lower, upper
-
-
 def generate_valid_vectors(count: int, seed: int) -> NDArray[np.float64]:
     """Generate reproducible, valid benchmark vectors without rejection sampling."""
 
@@ -64,14 +55,13 @@ def generate_valid_vectors(count: int, seed: int) -> NDArray[np.float64]:
         raise ValueError("count must be positive.")
 
     rng = np.random.default_rng(seed)
-    vectors = np.empty((count, 8), dtype=np.float64)
+    vectors = np.empty((count, 6), dtype=np.float64)
     vectors[:, 0] = rng.uniform(-10.0, 10.0, size=count)
-    vectors[:, 1] = rng.uniform(0.0, 20.0, size=count)
+    vectors[:, 1] = rng.uniform(-20.0, 20.0, size=count)
+    vectors[:, 2] = rng.uniform(1.5, 6.0, size=count)
+    vectors[:, 3] = rng.uniform(0.0, 4.0, size=count)
+    vectors[:, 4] = rng.uniform(1.5, 6.0, size=count)
     vectors[:, 5] = rng.uniform(0.0, 4.0, size=count)
-    vectors[:, 7] = rng.uniform(0.0, 4.0, size=count)
-    for index in range(count):
-        vectors[index, 2], vectors[index, 3] = _ordered_pair(rng)
-        vectors[index, 4], vectors[index, 6] = _ordered_pair(rng)
 
     if not all(is_physically_valid(vector) for vector in vectors):
         raise RuntimeError("The benchmark generator produced an invalid candidate.")
@@ -171,7 +161,7 @@ def _write_report(
         [
             f"- seed dos vetores: {seed}",
             f"- warm-up não medido: {warmup_evaluations} avaliações físicas válidas",
-            "- geração: amostragem uniforme dos bounds e geração condicional dos pares dispersivos estritos",
+            "- geração: amostragem uniforme e independente dos seis bounds finais",
             "",
             "## Medições primárias",
             "",

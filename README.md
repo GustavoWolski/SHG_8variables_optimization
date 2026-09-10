@@ -2,19 +2,21 @@
 
 Este repositório contém a implementação Python, validada contra MATLAB/Octave,
 de um modelo de geração de segundo harmônico (SHG) em quatro meios:
-ar | óxido | camada ativa | vidro. O objetivo científico é identificar oito
-parâmetros físicos por ajuste simultâneo de transmissão e reflexão.
+ar | óxido | camada ativa | vidro. A configuração final identifica seis
+parâmetros físicos por ajuste simultâneo de transmissão e reflexão, com
+óxido fixo em 10 nm e índices unitários e uma correção global da espessura
+nominal da camada ativa.
 
 ## Current status
 
-A física, a validação MATLAB/Octave × Python, constraints, função objetivo,
-parametrização comum, benchmark serial, Random Search e Differential Evolution
-estão concluídos. O ponto de retomada, decisões invariantes e resultados
+A física final, constraints e parametrização comum usam
+`p = [log10_chi, delta_d3_nm, n3_w, k3_w, n3_2w, k3_2w]` e `z ∈ [0,1]^6`.
+O ponto de retomada, decisões invariantes e resultados
 reprodutíveis estão em [Project State](docs/PROJECT_STATE.md).
 
-O próximo algoritmo planejado é Genetic Algorithm. PSO, CMA-ES, experimento
-comparativo final, análise estatística e identificabilidade ainda não foram
-implementados.
+O MATLAB versionado representa a formulação anterior de oito parâmetros e é
+preservado como referência histórica; ele não contém a correção `p(9)` da
+versão final comunicada pelo professor.
 
 ## Fontes de referência
 

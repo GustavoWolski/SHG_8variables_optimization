@@ -2,7 +2,7 @@
 
 ## 1. Objetivo científico
 
-Identificar os oito parâmetros físicos que reproduzem simultaneamente as
+Identificar os seis parâmetros físicos da configuração final que reproduzem simultaneamente as
 curvas experimentais de transmissão e reflexão:
 
     p* = argmin J(p),   J = J_T + J_R
@@ -17,26 +17,23 @@ MATLAB/Octave preservado é a referência física e numérica.
 
 ## 3. Vetor de parâmetros
 
-    p = [
-        log10_chi, d2_nm, n2_w, n2_2w,
-        re_n3_w, im_n3_w, re_n3_2w, im_n3_2w,
-    ]
+    p = [log10_chi, delta_d3_nm, n3_w, k3_w, n3_2w, k3_2w]
 
-chi = 10 ** log10_chi, d2_nm está em nm, e os índices da camada 3 são
-re_n3 + 1j * im_n3.
+chi = 10 ** log10_chi, delta_d3_nm está em nm, e os índices da camada 3
+são n3 + 1j * k3. O óxido permanece na física com d2 = 10 nm e índices
+n2_w = n2_2w = 1, fora do vetor de otimização.
 
 ## 4. Bounds e restrições físicas
 
     -10 <= log10_chi <= 10
-    0 <= d2_nm <= 20
-    1.0 <= n2_w, n2_2w <= 1.2
-    1.5 <= re_n3_w, re_n3_2w <= 6
-    0 <= im_n3_w, im_n3_2w <= 4
+    -20 <= delta_d3_nm <= 20
+    1.5 <= n3_w, n3_2w <= 6
+    0 <= k3_w, k3_2w <= 4
 
-Todos os índices reais são independentes; inclusive `n2_w >= n2_2w` e
-`re_n3_w >= re_n3_2w` são permitidos. Este é o **Search-space version 2,
-oxide 1–1.2**. Os baselines históricos
-abaixo pertencem ao **Search-space version 1**, que exigia
+Os índices reais da camada ativa são independentes; `n3_w >= n3_2w` é
+permitido. Esta é a **configuração final de seis variáveis, óxido fixo e
+correção global de d3**. Os baselines históricos abaixo pertencem a espaços
+anteriores de oito variáveis, incluindo o **Search-space version 1**, que exigia
 `n2_w < n2_2w` e `1.5 <= n2_w, n2_2w <= 6`; eles são preservados apenas como
 histórico e não são diretamente comparáveis aos benchmarks v2.
 
@@ -59,25 +56,28 @@ penalização de pico do ajuste MATLAB legado não pertence à análise principa
   regenerador único de figuras salvas.
 - tests/: testes unitários e regressão; results/: artefatos reprodutíveis.
 
-## 7. Validação física MATLAB/Octave × Python
+## 7. Validação histórica MATLAB/Octave × Python
 
     max_rel_error_T = 1.6717503026056207e-14
     max_rel_error_R = 3.644239657078057e-15
     max_intermediate_frobenius_error = 1.0878030299442186e-15
 
-    MATLAB/Octave × Python: PASS
+    MATLAB/Octave × Python (modelo antigo de oito parâmetros): PASS
 
-As fixtures de regressão estão em tests/reference/. Mudanças futuras na
-física devem continuar passando essa regressão.
+As fixtures em tests/reference/ registram a equivalência da implementação
+anterior. Elas não são uma referência numérica para a configuração final,
+pois o MATLAB versionado não contém `p(9)`/`delta_d3_nm` nem o óxido fixo.
 
 ## 8. Parametrização normalizada
 
-Todos os algoritmos trabalham no mesmo cubo z ∈ [0,1]^8 e usam a transformação
-z → p de src/optimization/parameterization.py. Para o óxido,
-`n2_w = 1 + 0.2*z2` e `n2_2w = 1 + 0.2*z3`: são variáveis uniformes e
-independentes em `[1,1.2]`. Os dois índices reais da camada 3 também são
-mapeados independentemente em `[1.5,6]`; não há transformação triangular nem
-restrição de dispersão normal. Detalhes da decisão estão em docs/decisions.md.
+Todos os algoritmos trabalham no mesmo cubo z ∈ [0,1]^6 e usam a transformação
+z → p de src/optimization/parameterization.py. `delta_d3_nm = -20 + 40*z[1]`;
+as demais coordenadas são mapeadas independentemente entre seus bounds. Não há
+transformação triangular, `DELTA_N` nem restrição de dispersão normal.
+
+Para cada ponto experimental, o simulador usa
+`d3_effective_nm = max(d3_nominal_nm + delta_d3_nm, 0)`. O mesmo offset é
+aplicado globalmente e os dados experimentais não são modificados.
 
 ## 9. Benchmark computacional
 
@@ -223,9 +223,60 @@ definitiva nem substitui o baseline W1.
 Os vetores por seed, melhores soluções, trade-off `J_T` × `J_R`, curvas de
 mediana+IQR e best-fits padronizados estão em `results/weighted_reflection/`.
 
+## 11.3. Rebenchmark — Search Space 2, óxido 1.0–1.2
+
+Os quatro algoritmos foram reexecutados no espaço da D-022, mantendo seeds
+1–5, budget de 50.000 avaliações físicas por seed e hiperparâmetros dos
+benchmarks anteriores. Foram 1.000.000 avaliações físicas no total. Os novos
+artefatos são independentes dos resultados anteriores e estão em
+`results/search_space_v2_oxide_1_1p2/`.
+
+| Algoritmo | Melhor J | Mediana J | Pior J | Melhor seed | J_T/J_R da melhor execução |
+|---|---:|---:|---:|---:|---:|
+| Random Search | 0.7908501272158618 | 0.9285015884229715 | 1.0523644657139095 | 1 | 0.3323245886707624 / 0.4585255385450994 |
+| Differential Evolution | 0.4825021358925249 | 0.4825021637743911 | 0.4825022826305730 | 2 | 0.1524089836947110 / 0.3300931521978139 |
+| Genetic Algorithm | 0.4857178323122006 | 0.6877105036327225 | 1.8527406527030210 | 1 | 0.1525573841347026 / 0.3331604481774980 |
+| Particle Swarm Optimization | 0.4825021116472447 | 0.4825021119439207 | 0.4825021124499362 | 1 | 0.1524013169661818 / 0.3301007946810628 |
+
+O menor J global foi obtido pelo PSO (seed 1), com
+`p = [9.449232008153444, 19.999999999831008, 1.1999999999309354,
+1.1999999997903479, 1.5000000000068365, 0.8188089620085308,
+2.3332593451599237, 1.3195661710414202]`. As figuras foram regeneradas
+somente a partir dos CSVs; a verificação SHA-256 confirmou que nenhum CSV foi
+alterado durante essa etapa.
+
+Uma primeira execução do Random Search concluiu as 250.000 avaliações, mas
+falhou ao serializar o histórico por incompatibilidade do writer CSV com
+campos ponderados já presentes na estrutura de convergência. O exportador foi
+corrigido e o algoritmo foi repetido com as mesmas seeds e budget; a tentativa
+incompleta foi preservada fora da análise em
+`random_search_failed_serialization_attempt/`. Portanto, o conjunto científico
+reportado contém 1.000.000 avaliações; houve 250.000 avaliações adicionais de
+tentativa técnica não incluídas nas estatísticas.
+
+## 11.4. Rebenchmark — Search Space 2, óxido 1.0–1.1
+
+Os quatro algoritmos foram executados no espaço da D-024, com seeds 1–5,
+50.000 avaliações físicas por seed e os mesmos hiperparâmetros dos baselines.
+O conjunto contém 20 execuções e 1.000.000 avaliações físicas. Os artefatos
+foram gravados separadamente em `results/search_space_v2_oxide_fixed/`.
+
+| Algoritmo | Melhor J | Mediana J | Pior J | Melhor seed | J_T/J_R da melhor execução |
+|---|---:|---:|---:|---:|---:|
+| Random Search | 0.8025944496691104 | 0.9309826762257616 | 1.0537840200511019 | 1 | 0.3401989986702860 / 0.4623954509988244 |
+| Differential Evolution | 0.4882871562121017 | 0.4882871736283140 | 0.4882871849880713 | 4 | 0.1600533623786276 / 0.3282337938334741 |
+| Genetic Algorithm | 0.4984919114831330 | 0.6789917362449082 | 1.8527406528660211 | 1 | 0.1595202448190916 / 0.3389716666640414 |
+| Particle Swarm Optimization | 0.4882871383451756 | 0.4882871384098018 | 0.4882871384524209 | 5 | 0.1600598984371068 / 0.3282272399080688 |
+
+O menor J global foi do PSO, seed 5, com
+`p = [9.440234600414467, 19.999999999669175, 1.0999999999714871,
+1.099999999999221, 1.5000000000109477, 0.8180586516071238,
+2.261999893927211, 1.3246283677042552]`. As figuras foram regeneradas a
+partir dos CSVs salvos, sem alterar seus hashes SHA-256.
+
 ## 12. Estado dos testes
 
-    pytest: 158 passed
+    pytest: 157 passed
 
 A suíte cobre Fresnel, vidro, simulador, regressão MATLAB/Octave, constraints,
 objective, parameterization, Random Search, Differential Evolution, Genetic
@@ -288,9 +339,9 @@ quatro pesos) e quatro comparações visuais do efeito do peso. O relatório e
 
 ## 15. Ponto exato de retomada
 
-O checkpoint encerra após a redução dos índices do óxido para `[1.0,1.2]`, a
-remoção da restrição de dispersão normal da camada ativa e a validação da suíte
-completa (158 passed). O modelo físico, o objetivo `J = J_T + J_R`, os
-algoritmos e todos os resultados existentes foram preservados; não houve novo
-benchmark. A próxima execução de benchmark deve usar um diretório novo, como
-`results/search_space_v2_oxide_1_1p2/`.
+O checkpoint atual implementa a configuração final confirmada pelo professor:
+seis variáveis, óxido fixo (`d2 = 10 nm`, `n2_w = n2_2w = 1`) e correção
+`d3_effective_nm = max(d3_nominal_nm + delta_d3_nm, 0)`, com
+`delta_d3_nm ∈ [-20,20]`. O MATLAB versionado é anterior e não contém `p(9)`;
+portanto, este estado não é apresentado como reprodução literal desse legado.
+Nenhum benchmark foi autorizado ou executado neste checkpoint.

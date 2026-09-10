@@ -962,8 +962,8 @@ Define os limites individuais dos índices reais recuperados pela otimização.
 
 ## Para a camada 2
 
-Os índices reais do óxido são coordenadas independentes, cada uma no
-intervalo fechado $[1.0,1.2]$. Não há condição de ordenação para esta camada.
+O óxido permanece explícito, mas não é otimizado: $d_2=10$ nm e
+$n_{2,\omega}=n_{2,2\omega}=1$.
 
 ## Para a camada 3
 
@@ -983,6 +983,19 @@ intervalo fechado $[1.5,6]$. Não há condição de ordenação entre elas.
 Neste experimento não se infere nem se impõe uma relação de dispersão normal
 entre os dois índices reais da camada ativa; ambos variam livremente dentro de
 seus limites individuais.
+
+## Correção da espessura ativa
+
+A espessura dos dados é nominal. Para cada ponto, todos os termos de propagação
+e fonte na camada 3 usam:
+
+$$
+d_{3,\mathrm{efetiva}}=\max(d_{3,\mathrm{nominal}}+\Delta d_3,0),
+\qquad -20\leq\Delta d_3\leq20\text{ nm}.
+$$
+
+O mesmo $\Delta d_3$ é aplicado globalmente a todos os pontos e somente então
+a espessura é convertida de nanômetros para metros.
 
 ---
 
@@ -1321,19 +1334,17 @@ $$
 
 ### $\mathbf p$
 
-Vetor contendo os oito parâmetros:
+Vetor contendo os seis parâmetros finais:
 
 $$
 \mathbf{p} =
 [
 \log_{10}(\chi),
-d_2,
-n_{2,\omega},
-n_{2,2\omega},
-\operatorname{Re}(n_{3,\omega}),
-\operatorname{Im}(n_{3,\omega}),
-\operatorname{Re}(n_{3,2\omega}),
-\operatorname{Im}(n_{3,2\omega})
+\Delta d_3,
+n_{3,\omega},
+k_{3,\omega},
+n_{3,2\omega},
+k_{3,2\omega}
 ]
 $$
 
@@ -1344,18 +1355,23 @@ Região fisicamente permitida.
 Inclui, entre outras restrições:
 
 $$
-0\leq d_2\leq20\text{ nm}
+-20\leq\Delta d_3\leq20\text{ nm}
 $$
 
 $$
 0\leq\operatorname{Im}(n)\leq4
 $$
 
-e:
+o óxido fixo e os limites individuais dos índices reais da camada ativa:
 
 $$
-n(\omega)<n(2\omega).
+d_2=10\text{ nm},\quad n_{2,\omega}=n_{2,2\omega}=1,
+\qquad
+1.5\leq\operatorname{Re}(n_{3,\omega}),
+\operatorname{Re}(n_{3,2\omega})\leq6.
 $$
+
+Não há condição de ordenação entre os índices reais da camada ativa.
 
 ### $\arg\min$
 

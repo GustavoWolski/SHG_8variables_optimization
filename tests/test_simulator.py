@@ -2,11 +2,19 @@
 
 import numpy as np
 
-from physics.simulator import shg_4layers, shg_mos2_ratios, simulate
+from physics.simulator import (
+    D2_FIXED_NM,
+    N2_2W_FIXED,
+    N2_W_FIXED,
+    effective_active_thickness_nm,
+    shg_4layers,
+    shg_mos2_ratios,
+    simulate,
+)
 
 
-P0 = np.array([0.0, 10.0, 2.10, 2.43, 2.04, 0.70, 1.42, 0.80])
-P_SEARCH_SPACE = np.array([0.0, 10.0, 1.10, 1.15, 5.50, 0.70, 2.00, 0.80])
+P0 = np.array([0.0, 0.0, 2.04, 0.70, 1.42, 0.80])
+P_SEARCH_SPACE = np.array([0.0, 10.0, 5.50, 0.70, 2.00, 0.80])
 EXPERIMENTAL_THICKNESSES_NM = np.array([65, 80, 100, 150, 190, 250, 300, 400, 500, 600])
 
 
@@ -59,6 +67,11 @@ def test_single_thickness_supports_optional_diagnostics() -> None:
     assert result.T.shape == (1,)
     assert result.R.shape == (1,)
     assert result.diagnostics is not None
+    assert result.diagnostics.d2_m == D2_FIXED_NM * 1e-9
+    assert result.diagnostics.n21w == N2_W_FIXED
+    assert result.diagnostics.n22w == N2_2W_FIXED
+    assert result.diagnostics.d3_nominal_nm == 65.0
+    assert result.diagnostics.d3_effective_nm == 65.0
     assert result.diagnostics.t1w.shape == (2, 2)
     assert result.diagnostics.e31w.shape == (2, 1)
     assert result.diagnostics.mfact_es.shape == (2, 2)
@@ -67,6 +80,32 @@ def test_single_thickness_supports_optional_diagnostics() -> None:
     assert result.diagnostics.eshg.shape == (2, 1)
     assert np.isfinite(result.diagnostics.i_4)
     assert np.isfinite(result.diagnostics.i_1)
+
+
+def test_effective_active_thickness_applies_global_offset_and_zero_floor() -> None:
+    assert effective_active_thickness_nm(65.0, 0.0) == 65.0
+    assert effective_active_thickness_nm(65.0, 10.0) == 75.0
+    assert effective_active_thickness_nm(5.0, -20.0) == 0.0
+
+
+def test_negative_corrected_thickness_is_zero_in_the_simulator() -> None:
+    parameters = P0.copy()
+    parameters[1] = -20.0
+    result = simulate(parameters, 5.0, diagnostics=True)
+    assert result.diagnostics is not None
+    assert result.diagnostics.d3_effective_nm == 0.0
+    assert result.diagnostics.d3_m == 0.0
+    assert np.all(np.isfinite(result.T))
+    assert np.all(np.isfinite(result.R))
+
+
+def test_delta_d3_is_used_by_all_active_thickness_phases_and_sources() -> None:
+    result = simulate(P_SEARCH_SPACE, 5.0, diagnostics=True)
+    assert result.diagnostics is not None
+    assert result.diagnostics.d3_effective_nm == 15.0
+    assert result.diagnostics.d3_m == np.float64(15.0) * 1e-9
+    assert result.diagnostics.phase31w == result.diagnostics.n31w * (2 * np.pi / 1560e-9) * result.diagnostics.d3_m
+    assert result.diagnostics.phase32w == result.diagnostics.n32w * 2 * (2 * np.pi / 1560e-9) * result.diagnostics.d3_m
 
 
 def test_shg_mos2_ratios_matches_public_simulation_output() -> None:

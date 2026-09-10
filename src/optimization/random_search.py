@@ -11,7 +11,7 @@ from numpy.typing import NDArray
 
 from optimization.constraints import is_physically_valid
 from optimization.objective import DEFAULT_OBJECTIVE_WEIGHTS, ObjectiveEvaluator, ObjectiveResult, ObjectiveWeights
-from optimization.parameterization import to_physical
+from optimization.parameterization import NORMALIZED_PARAMETER_COUNT, to_physical
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,7 +98,7 @@ def _result_from_best(
 def random_search(
     *, budget: int, seed: int, weights: ObjectiveWeights = DEFAULT_OBJECTIVE_WEIGHTS
 ) -> RandomSearchResult:
-    """Run serial uniform Random Search in ``z ∈ [0, 1]^8``.
+    """Run serial uniform Random Search in ``z ∈ [0, 1]^6``.
 
     Every candidate is mapped through :func:`to_physical` before evaluation,
     so no repair, rejection, penalty, or additional constraint handling is
@@ -115,7 +115,7 @@ def random_search(
 
     start = perf_counter()
     while evaluator.n_evaluations < evaluation_budget:
-        normalized = rng.uniform(0.0, 1.0, size=8)
+        normalized = rng.uniform(0.0, 1.0, size=NORMALIZED_PARAMETER_COUNT)
         physical = to_physical(normalized)
         current = evaluator.evaluate(physical)
         if best_evaluation is None or current.J_weighted < best_evaluation.J_weighted:

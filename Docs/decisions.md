@@ -478,6 +478,82 @@ alteração; os resultados existentes são preservados integralmente. Futuras
 execuções devem usar um diretório novo, por exemplo
 `results/search_space_v2_oxide_1_1p2/`.
 
+## D-023 — Rebenchmark do Search Space 2 com óxido 1.0–1.2
+
+Foram executados Random Search, Differential Evolution, Genetic Algorithm e
+Particle Swarm Optimization com as mesmas seeds (1–5), budget (50.000
+avaliações físicas por seed), hiperparâmetros e critérios de parada dos
+benchmarks anteriores. O objetivo foi mantido como `J = J_T + J_R` e o total
+foi de 1.000.000 avaliações físicas.
+
+Os resultados, históricos individuais, vetores `z` e `p`, respostas teóricas,
+relatórios e figuras padronizadas estão em
+`results/search_space_v2_oxide_1_1p2/`. O menor J global foi
+`0.4825021116472447`, obtido pelo PSO na seed 1. Esta é uma comparação
+descritiva de cinco seeds; não sustenta alegação de superioridade estatística.
+
+Uma tentativa inicial de Random Search completou suas avaliações, mas falhou
+na serialização de `convergence_history.csv` porque o writer antigo recebia os
+campos ponderados adicionais do registro de convergência. O writer foi
+corrigido sem alterar o algoritmo, e a execução foi repetida com a mesma
+configuração. A tentativa parcial foi preservada fora da análise; as 250.000
+avaliações técnicas adicionais não integram o total científico reportado.
+
+## D-024 — Search Space 2 com índices do óxido em 1.0–1.1
+
+Para a próxima rodada, somente o intervalo dos dois índices reais do óxido é
+reduzido de `[1.0,1.2]` para `[1.0,1.1]`. O vetor físico e o vetor
+normalizado permanecem com oito coordenadas, e o mapa do óxido passa a ser
+`n2_w = 1.0 + 0.1*z[2]` e `n2_2w = 1.0 + 0.1*z[3]`.
+
+O óxido continua explícito, sua espessura continua variável, e os índices
+reais da camada ativa permanecem independentes em `[1.5,6]`. Simulador,
+equações, objetivo `J = J_T + J_R`, algoritmos, seeds, budgets e resultados
+anteriores não são modificados. Esta decisão não autoriza benchmark; uma
+rodada futura deve ser salva separadamente, por exemplo em
+`results/search_space_v2_oxide_1_1p1/`.
+
+## D-025 — Rebenchmark do Search Space 2, óxido 1.0–1.1
+
+Random Search, Differential Evolution, Genetic Algorithm e Particle Swarm
+Optimization foram executados com seeds 1–5, 50.000 avaliações físicas por
+seed e hiperparâmetros inalterados. O conjunto científico totaliza 1.000.000
+avaliações e está em `results/search_space_v2_oxide_fixed/`.
+
+O menor J global foi `0.4882871383451756`, obtido pelo PSO na seed 5; para o
+mesmo vetor, `J_T = 0.1600598984371068` e
+`J_R = 0.3282272399080688`. As figuras foram geradas exclusivamente dos CSVs
+salvos, cuja verificação SHA-256 permaneceu inalterada. A comparação com cinco
+seeds é descritiva e não sustenta conclusão de superioridade estatística.
+
+## D-026 — Configuração final: óxido fixo e correção global de d3
+
+Por orientação final confirmada pelo professor, a formulação corrente passa a
+usar seis variáveis físicas:
+
+`p = [log10_chi, delta_d3_nm, n3_w, k3_w, n3_2w, k3_2w]`.
+
+O óxido permanece explicitamente no modelo de quatro camadas, porém com
+`d2 = 10 nm`, `n2_w = 1` e `n2_2w = 1`. Essas três grandezas são constantes e
+não pertencem ao espaço de busca. A espessura fornecida pelos dados é
+`d3_nominal_nm`; em todos os termos físicos dependentes da camada ativa usa-se
+`d3_effective_nm = max(d3_nominal_nm + delta_d3_nm, 0)`, com o mesmo offset
+global em todos os pontos e `delta_d3_nm ∈ [-20,20]`.
+
+O espaço normalizado passa a ser `z ∈ [0,1]^6`, com
+`delta_d3_nm = -20 + 40*z[1]` e mapas afins independentes para as demais
+coordenadas. `n3_w` e `n3_2w` continuam independentes; não há restrição de
+dispersão normal, `DELTA_N`, mapa triangular, penalty, repair ou rejection.
+O objetivo permanece exatamente `J = J_T + J_R`, com dados e normalizações
+inalterados.
+
+O MATLAB versionado no repositório representa a formulação anterior de oito
+parâmetros e usa `d3 = (dnm - p(2))*1e-9`; ele não contém `p(9)`. A presente
+configuração segue a versão final comunicada pelo professor e não constitui
+reprodução literal do MATLAB legado versionado. Os fixtures MATLAB existentes
+permanecem como registro histórico, não como regressão numérica da nova API.
+Esta decisão não autoriza nem executa benchmark.
+
 ## Ambiguidades abertas
 
 1. Os caminhos foram normalizados para `docs/methodology.md`,

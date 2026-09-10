@@ -6,7 +6,6 @@ import argparse
 import csv
 import json
 import sys
-from dataclasses import asdict
 from pathlib import Path
 from time import perf_counter
 
@@ -75,7 +74,15 @@ def _write_history(results: list[RandomSearchResult], output_path: Path) -> None
         writer.writeheader()
         for result in results:
             for record in result.convergence_history:
-                writer.writerow({"seed": result.seed, **asdict(record)})
+                writer.writerow(
+                    {
+                        "seed": result.seed,
+                        "evaluation": record.evaluation,
+                        "best_J": record.best_J,
+                        "best_J_T": record.best_J_T,
+                        "best_J_R": record.best_J_R,
+                    }
+                )
 
 
 def _write_summary(results: list[RandomSearchResult], output_path: Path) -> dict[str, dict[str, float]]:
@@ -95,7 +102,7 @@ def _write_summary(results: list[RandomSearchResult], output_path: Path) -> dict
 
 
 def _write_parameters(results: list[RandomSearchResult], output_path: Path) -> None:
-    """Write the eight best physical parameters obtained by each seed."""
+    """Write the six best physical parameters obtained by each seed."""
 
     with output_path.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=["seed", "best_J", *PARAMETER_NAMES])
@@ -131,7 +138,7 @@ def _write_report(
         f"- seeds: `{', '.join(str(result.seed) for result in results)}`",
         f"- budget por seed: `{best.budget}` avaliações físicas",
         f"- total de avaliações físicas: `{sum(result.n_evaluations for result in results)}`",
-        "- espaço: `z ∈ [0,1]^8`, mapeado pela transformação compartilhada `z → p`",
+        "- espaço: `z ∈ [0,1]^6`, mapeado pela transformação compartilhada `z → p`",
         "",
         "## Estatísticas dos resultados finais",
         "",
@@ -163,7 +170,7 @@ def _write_report(
             "## Observações descritivas",
             "",
             "- As cinco seeds fornecem uma primeira medida de variabilidade de J e dos parâmetros; "
-            "a tabela `best_parameters.csv` preserva os oito vetores para inspeção inicial.",
+            "a tabela `best_parameters.csv` preserva os seis vetores para inspeção inicial.",
             "- As curvas usam valores best-so-far brutos, sem suavização.",
             "- Este experimento é apenas um baseline preliminar; ele não classifica a qualidade do "
             "Random Search e não constitui análise de identificabilidade.",

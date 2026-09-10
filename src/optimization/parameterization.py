@@ -11,14 +11,14 @@ from optimization.constraints import PARAMETER_COUNT, is_physically_valid, valid
 
 
 NORMALIZED_PARAMETER_COUNT: Final[int] = PARAMETER_COUNT
-OXIDE_INDEX_LOWER_BOUND: Final[float] = 1.0
-OXIDE_INDEX_UPPER_BOUND: Final[float] = 1.2
 ACTIVE_INDEX_LOWER_BOUND: Final[float] = 1.5
 ACTIVE_INDEX_UPPER_BOUND: Final[float] = 6.0
+DELTA_D3_LOWER_BOUND_NM: Final[float] = -20.0
+DELTA_D3_UPPER_BOUND_NM: Final[float] = 20.0
 
 
 def validate_normalized(z: ArrayLike) -> NDArray[np.float64]:
-    """Return a finite real normalized vector in the closed unit cube ``[0, 1]^8``."""
+    """Return a finite real normalized vector in the closed unit cube ``[0, 1]^6``."""
 
     try:
         raw = np.asarray(z)
@@ -42,19 +42,18 @@ def validate_normalized(z: ArrayLike) -> NDArray[np.float64]:
 
 
 def to_physical(z: ArrayLike) -> NDArray[np.float64]:
-    """Map independent ``z in [0, 1]^8`` coordinates to physical vector ``p``."""
+    """Map independent ``z in [0, 1]^6`` coordinates to physical vector ``p``."""
 
     values = validate_normalized(z)
     parameters = np.array(
         [
             -10.0 + 20.0 * values[0],
-            20.0 * values[1],
-            1.0 + 0.2 * values[2],
-            1.0 + 0.2 * values[3],
+            DELTA_D3_LOWER_BOUND_NM
+            + (DELTA_D3_UPPER_BOUND_NM - DELTA_D3_LOWER_BOUND_NM) * values[1],
+            ACTIVE_INDEX_LOWER_BOUND + (ACTIVE_INDEX_UPPER_BOUND - ACTIVE_INDEX_LOWER_BOUND) * values[2],
+            4.0 * values[3],
             ACTIVE_INDEX_LOWER_BOUND + (ACTIVE_INDEX_UPPER_BOUND - ACTIVE_INDEX_LOWER_BOUND) * values[4],
-            4.0 * values[6],
-            ACTIVE_INDEX_LOWER_BOUND + (ACTIVE_INDEX_UPPER_BOUND - ACTIVE_INDEX_LOWER_BOUND) * values[5],
-            4.0 * values[7],
+            4.0 * values[5],
         ],
         dtype=np.float64,
     )
@@ -70,17 +69,14 @@ def to_normalized(p: ArrayLike) -> NDArray[np.float64]:
     normalized = np.array(
         [
             (parameters[0] + 10.0) / 20.0,
-            parameters[1] / 20.0,
-            (parameters[2] - OXIDE_INDEX_LOWER_BOUND)
-            / 0.2,
-            (parameters[3] - OXIDE_INDEX_LOWER_BOUND)
-            / 0.2,
+            (parameters[1] - DELTA_D3_LOWER_BOUND_NM)
+            / (DELTA_D3_UPPER_BOUND_NM - DELTA_D3_LOWER_BOUND_NM),
+            (parameters[2] - ACTIVE_INDEX_LOWER_BOUND)
+            / (ACTIVE_INDEX_UPPER_BOUND - ACTIVE_INDEX_LOWER_BOUND),
+            parameters[3] / 4.0,
             (parameters[4] - ACTIVE_INDEX_LOWER_BOUND)
             / (ACTIVE_INDEX_UPPER_BOUND - ACTIVE_INDEX_LOWER_BOUND),
-            (parameters[6] - ACTIVE_INDEX_LOWER_BOUND)
-            / (ACTIVE_INDEX_UPPER_BOUND - ACTIVE_INDEX_LOWER_BOUND),
             parameters[5] / 4.0,
-            parameters[7] / 4.0,
         ],
         dtype=np.float64,
     )

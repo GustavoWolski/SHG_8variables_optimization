@@ -35,13 +35,11 @@ class ConstraintViolation:
 
 PARAMETER_DEFINITIONS: Final[tuple[ParameterDefinition, ...]] = (
     ParameterDefinition("log10_chi", -10.0, 10.0, "log10(chi)"),
-    ParameterDefinition("d2_nm", 0.0, 20.0, "nm"),
-    ParameterDefinition("n2_w", 1.0, 1.2, "dimensionless"),
-    ParameterDefinition("n2_2w", 1.0, 1.2, "dimensionless"),
-    ParameterDefinition("re_n3_w", 1.5, 6.0, "dimensionless"),
-    ParameterDefinition("im_n3_w", 0.0, 4.0, "dimensionless"),
-    ParameterDefinition("re_n3_2w", 1.5, 6.0, "dimensionless"),
-    ParameterDefinition("im_n3_2w", 0.0, 4.0, "dimensionless"),
+    ParameterDefinition("delta_d3_nm", -20.0, 20.0, "nm"),
+    ParameterDefinition("n3_w", 1.5, 6.0, "dimensionless"),
+    ParameterDefinition("k3_w", 0.0, 4.0, "dimensionless"),
+    ParameterDefinition("n3_2w", 1.5, 6.0, "dimensionless"),
+    ParameterDefinition("k3_2w", 0.0, 4.0, "dimensionless"),
 )
 """Official parameter order, bounds, and units for every future optimizer."""
 
@@ -106,7 +104,7 @@ def _coerce_parameter_vector(p: ArrayLike) -> tuple[NDArray[np.float64] | None, 
 
 
 def validate_parameter_vector(p: ArrayLike) -> NDArray[np.float64]:
-    """Return ``p`` as a finite, real, one-dimensional vector of length eight.
+    """Return ``p`` as a finite, real, one-dimensional vector of length six.
 
     This function checks vector structure only. Use
     :func:`validate_physical_parameters` when box bounds must also be
@@ -123,8 +121,8 @@ def validate_parameter_vector(p: ArrayLike) -> NDArray[np.float64]:
 def constraint_violations(p: ArrayLike) -> tuple[ConstraintViolation, ...]:
     """Return every structural or physical reason that ``p`` is invalid.
 
-    Box bounds are inclusive. All eight coordinates, including both real
-    layer-3 indices, are independent.
+    Box bounds are inclusive. All six coordinates are independent; in
+    particular, no ordering is imposed on the two real layer-3 indices.
     """
 
     values, violations = _coerce_parameter_vector(p)
