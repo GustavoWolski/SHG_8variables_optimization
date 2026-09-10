@@ -27,8 +27,8 @@ n2_w = n2_2w = 1, fora do vetor de otimização.
 
     -10 <= log10_chi <= 10
     -20 <= delta_d3_nm <= 20
-    1.5 <= n3_w, n3_2w <= 6
-    0 <= k3_w, k3_2w <= 4
+    0.1 <= n3_w, n3_2w <= 10
+    0 <= k3_w, k3_2w <= 10
 
 Os índices reais da camada ativa são independentes; `n3_w >= n3_2w` é
 permitido. Esta é a **configuração final de seis variáveis, óxido fixo e
@@ -327,6 +327,51 @@ Validação direcionada do checkpoint: 30 testes de plotting, simulador e
 objetivo passaram. A suíte completa com testes smoke dos otimizadores não foi
 reexecutada, em respeito à instrução de não rodar Random Search, DE, GA ou PSO.
 
+## 12.4. Benchmark final do modelo de 6 parâmetros
+
+O benchmark final autorizado foi concluído em `results/final_6parameter_model/`.
+Random Search, Differential Evolution, Genetic Algorithm e Particle Swarm
+Optimization foram executados com seeds 1–5 e budget exato de 50.000 avaliações
+físicas por seed: 20 runs e 1.000.000 de avaliações no total. O preflight
+direcionado passou em 141 testes, incluindo constraints, parametrização,
+objetivo, simulador, plotting e smoke tests dos quatro algoritmos.
+
+A melhor solução global veio da Differential Evolution, seed 3:
+
+    J   = 0.4933365610782263
+    J_T = 0.1666529398522359
+    J_R = 0.3266836212259904
+    p   = [9.431688774846851, -19.999999999999904,
+           1.5000000000000013, 0.8195054138470563,
+           2.1957897720412665, 1.3242101261547625]
+
+Os 20 resultados foram reavaliados independentemente; todos conservaram
+`J = J_T + J_R`, respeitaram os bounds e consumiram exatamente o budget salvo.
+Cada algoritmo possui histórico bruto, agregado Q1/mediana/Q3 por avaliação,
+best-fit e gráfico combinado T/R denso em PNG/PDF. As tabelas comparativas,
+variabilidade dos parâmetros, validação e melhor global estão em
+`results/final_6parameter_model/comparisons/`; o relatório principal é
+`results/final_6parameter_model/final_report.md`.
+
+Comportamentos observados: DE foi praticamente idêntico entre as cinco seeds;
+DE e três seeds de PSO chegaram à mesma bacia numérica; a melhor solução usa
+os limites inferiores de `delta_d3_nm` e `n3_w`; o GA apresentou uma seed
+substancialmente pior. Nenhum resultado foi repetido ou ajustado por isso.
+Resultados históricos fora da nova raiz não foram sobrescritos.
+
+## 12.5. Correção dos bounds ópticos da camada ativa
+
+Em 10 de setembro de 2026, os quatro bounds ópticos foram corrigidos para
+`n3_w ∈ [0.1,10.0]`, `k3_w ∈ [0.0,10.0]`,
+`n3_2w ∈ [0.1,10.0]` e `k3_2w ∈ [0.0,10.0]`. Constraints,
+parametrização normalizada, testes e o gerador de vetores do benchmark de
+custo foram atualizados sem alterar simulador, objetivo ou algoritmos.
+
+Validação direcionada: 54 testes de constraints, parametrização e objetivo
+passaram. Nenhum otimizador ou benchmark científico foi executado. Os
+resultados existentes foram produzidos com os limites anteriores e permanecem
+preservados como históricos.
+
 ## 13. Decisões que NÃO devem ser alteradas sem discussão
 
 ### Do not change without discussion
@@ -356,9 +401,14 @@ reexecutada, em respeito à instrução de não rodar Random Search, DE, GA ou P
 
 ## 15. Ponto exato de retomada
 
-O checkpoint atual implementa a configuração final confirmada pelo professor:
-seis variáveis, óxido fixo (`d2 = 10 nm`, `n2_w = n2_2w = 1`) e correção
-`d3_effective_nm = max(d3_nominal_nm + delta_d3_nm, 0)`, com
-`delta_d3_nm ∈ [-20,20]`. O MATLAB versionado é anterior e não contém `p(9)`;
-portanto, este estado não é apresentado como reprodução literal desse legado.
-Nenhum benchmark foi autorizado ou executado neste checkpoint.
+O checkpoint atual contém a configuração final de seis variáveis, óxido fixo,
+correção de espessura e os bounds ópticos corrigidos para `[0.1,10]` nas
+partes reais e `[0,10]` nas partes imaginárias da camada ativa. O benchmark
+final completo de RS, DE, GA e PSO foi executado com os bounds anteriores e
+permanece preservado como resultado histórico; não foi reexecutado após esta
+correção.
+A retomada deve partir de `results/final_6parameter_model/final_report.md` e das
+tabelas em `results/final_6parameter_model/comparisons/`. A melhor solução
+global atual é DE seed 3 com `J = 0.4933365610782263`. O fato de
+`delta_d3_nm` e `n3_w` estarem no limite inferior deve ser considerado em
+qualquer discussão de identificabilidade ou revisão futura dos bounds.

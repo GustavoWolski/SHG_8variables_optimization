@@ -568,6 +568,19 @@ spline, smoothing ou criação de observações. A API recebe dados e configura�
 de saída explicitamente, aceita incertezas opcionais quando fornecidas e salva
 PNG de alta resolução e PDF vetorial sem sobrescrever por padrão.
 
+## D-028 — Correção dos bounds ópticos da camada ativa
+
+Os limites confirmados das quatro variáveis ópticas da camada ativa são:
+`n3_w ∈ [0.1,10.0]`, `k3_w ∈ [0.0,10.0]`,
+`n3_2w ∈ [0.1,10.0]` e `k3_2w ∈ [0.0,10.0]`. As duas partes reais
+continuam independentes e os limites são inclusivos.
+
+Nenhuma outra definição é alterada: vetor de seis parâmetros, óxido fixo,
+correção global de espessura, simulador, equações, unidades, objetivo,
+normalizações e algoritmos permanecem iguais. Os benchmarks existentes foram
+obtidos com os bounds anteriores e permanecem preservados como históricos;
+esta decisão não autoriza nem executa um novo benchmark.
+
 ## Ambiguidades abertas
 
 1. Os caminhos foram normalizados para `docs/methodology.md`,

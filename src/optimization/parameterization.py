@@ -11,8 +11,9 @@ from optimization.constraints import PARAMETER_COUNT, is_physically_valid, valid
 
 
 NORMALIZED_PARAMETER_COUNT: Final[int] = PARAMETER_COUNT
-ACTIVE_INDEX_LOWER_BOUND: Final[float] = 1.5
-ACTIVE_INDEX_UPPER_BOUND: Final[float] = 6.0
+ACTIVE_INDEX_LOWER_BOUND: Final[float] = 0.1
+ACTIVE_INDEX_UPPER_BOUND: Final[float] = 10.0
+ACTIVE_EXTINCTION_UPPER_BOUND: Final[float] = 10.0
 DELTA_D3_LOWER_BOUND_NM: Final[float] = -20.0
 DELTA_D3_UPPER_BOUND_NM: Final[float] = 20.0
 
@@ -51,9 +52,9 @@ def to_physical(z: ArrayLike) -> NDArray[np.float64]:
             DELTA_D3_LOWER_BOUND_NM
             + (DELTA_D3_UPPER_BOUND_NM - DELTA_D3_LOWER_BOUND_NM) * values[1],
             ACTIVE_INDEX_LOWER_BOUND + (ACTIVE_INDEX_UPPER_BOUND - ACTIVE_INDEX_LOWER_BOUND) * values[2],
-            4.0 * values[3],
+            ACTIVE_EXTINCTION_UPPER_BOUND * values[3],
             ACTIVE_INDEX_LOWER_BOUND + (ACTIVE_INDEX_UPPER_BOUND - ACTIVE_INDEX_LOWER_BOUND) * values[4],
-            4.0 * values[5],
+            ACTIVE_EXTINCTION_UPPER_BOUND * values[5],
         ],
         dtype=np.float64,
     )
@@ -73,10 +74,10 @@ def to_normalized(p: ArrayLike) -> NDArray[np.float64]:
             / (DELTA_D3_UPPER_BOUND_NM - DELTA_D3_LOWER_BOUND_NM),
             (parameters[2] - ACTIVE_INDEX_LOWER_BOUND)
             / (ACTIVE_INDEX_UPPER_BOUND - ACTIVE_INDEX_LOWER_BOUND),
-            parameters[3] / 4.0,
+            parameters[3] / ACTIVE_EXTINCTION_UPPER_BOUND,
             (parameters[4] - ACTIVE_INDEX_LOWER_BOUND)
             / (ACTIVE_INDEX_UPPER_BOUND - ACTIVE_INDEX_LOWER_BOUND),
-            parameters[5] / 4.0,
+            parameters[5] / ACTIVE_EXTINCTION_UPPER_BOUND,
         ],
         dtype=np.float64,
     )

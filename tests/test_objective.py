@@ -65,7 +65,7 @@ def test_same_input_produces_the_same_detailed_result() -> None:
 
 def test_invalid_vector_is_rejected_before_a_detailed_evaluation() -> None:
     invalid = VALID_PARAMETERS.copy()
-    invalid[2] = 6.01
+    invalid[2] = 10.01
 
     with pytest.raises(InvalidParameterError, match="n3_w") as error:
         evaluate(invalid)
@@ -86,7 +86,7 @@ def test_stateful_evaluator_counts_each_valid_physical_call() -> None:
 def test_rejected_candidate_does_not_increment_physical_evaluation_count() -> None:
     evaluator = ObjectiveEvaluator()
     invalid = VALID_PARAMETERS.copy()
-    invalid[5] = 4.01
+    invalid[5] = 10.01
 
     with pytest.raises(InvalidParameterError, match="k3_2w"):
         evaluator.objective(invalid)

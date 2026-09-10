@@ -26,6 +26,7 @@ from optimization.differential_evolution import (
     DifferentialEvolutionResult,
     differential_evolution,
 )
+from optimization.parameterization import NORMALIZED_PARAMETER_COUNT
 
 
 DEFAULT_SEEDS = (1, 2, 3, 4, 5)
@@ -156,7 +157,8 @@ def _write_report(
         f"- Python: {platform.python_version()}",
         f"- Sistema: {platform.platform()}",
         f"- Estratégia: {best.configuration.strategy}",
-        f"- População nominal: {best.configuration.popsize} × 8 = {best.configuration.popsize * 8}",
+        f"- População nominal: {best.configuration.popsize} × {NORMALIZED_PARAMETER_COUNT} = "
+        f"{best.configuration.popsize * NORMALIZED_PARAMETER_COUNT}",
         f"- Mutation: {best.configuration.mutation}",
         f"- Recombination: {best.configuration.recombination}",
         f"- Inicialização: {best.configuration.init}",

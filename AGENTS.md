@@ -55,8 +55,8 @@ dependem de autorização explícita.
 
 - `-10 <= log10_chi <= 10`;
 - `-20 <= delta_d3_nm <= 20`;
-- `1.5 <= n3_w, n3_2w <= 6`;
-- `0 <= k3_w, k3_2w <= 4`;
+- `0.1 <= n3_w, n3_2w <= 10`;
+- `0 <= k3_w, k3_2w <= 10`;
 - `n3_w` e `n3_2w` são independentes, sem ordenação ou restrição de dispersão.
 
 ## Objetivo e experimentos futuros

@@ -143,17 +143,17 @@ O óxido é fixo: $d_2=10$ nm e $n_{2,\omega}=n_{2,2\omega}=1$.
 ## 6.3 Partes reais dos índices
 
 $$
-1.5\leq\operatorname{Re}(n_{3,\omega}),\;\operatorname{Re}(n_{3,2\omega})\leq6
+0.1\leq\operatorname{Re}(n_{3,\omega}),\;\operatorname{Re}(n_{3,2\omega})\leq10
 $$
 
 ## 6.4 Partes imaginárias
 
 $$
-0\leq\operatorname{Im}(n_{3,\omega})\leq4
+0\leq\operatorname{Im}(n_{3,\omega})\leq10
 $$
 
 $$
-0\leq\operatorname{Im}(n_{3,2\omega})\leq4
+0\leq\operatorname{Im}(n_{3,2\omega})\leq10
 $$
 
 ---
@@ -162,7 +162,7 @@ $$
 
 Na configuração final, os índices reais da camada ativa,
 $\operatorname{Re}(n_{3,\omega})$ e
-$\operatorname{Re}(n_{3,2\omega})$, também são independentes em $[1.5,6]$.
+$\operatorname{Re}(n_{3,2\omega})$, também são independentes em $[0.1,10]$.
 Não há, neste experimento, restrição de dispersão normal nem parametrização
 triangular entre os índices da camada ativa. A mesma parametrização
 independente deverá ser usada de forma justa em todos os algoritmos.
@@ -544,11 +544,11 @@ $$
 
 $$
 d_2=10\text{ nm},\qquad n_{2,\omega}=n_{2,2\omega}=1,
-\qquad 1.5\leq\operatorname{Re}(n_3)\leq6
+\qquad 0.1\leq\operatorname{Re}(n_3)\leq10
 $$
 
 $$
-0\leq k\leq4
+0\leq k\leq10
 $$
 
 Não há condição de ordenação entre os índices reais em $\omega$ e
@@ -784,12 +784,12 @@ d_2=10\text{ nm},\qquad n_{2,\omega}=n_{2,2\omega}=1
 $$
 
 $$
-1.5\leq\operatorname{Re}(n_{3,\omega}),\;
-\operatorname{Re}(n_{3,2\omega})\leq6
+0.1\leq\operatorname{Re}(n_{3,\omega}),\;
+\operatorname{Re}(n_{3,2\omega})\leq10
 $$
 
 $$
-0\leq k\leq4
+0\leq k\leq10
 $$
 
 ## Índices reais independentes

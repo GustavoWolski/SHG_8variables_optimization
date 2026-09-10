@@ -58,10 +58,10 @@ def generate_valid_vectors(count: int, seed: int) -> NDArray[np.float64]:
     vectors = np.empty((count, 6), dtype=np.float64)
     vectors[:, 0] = rng.uniform(-10.0, 10.0, size=count)
     vectors[:, 1] = rng.uniform(-20.0, 20.0, size=count)
-    vectors[:, 2] = rng.uniform(1.5, 6.0, size=count)
-    vectors[:, 3] = rng.uniform(0.0, 4.0, size=count)
-    vectors[:, 4] = rng.uniform(1.5, 6.0, size=count)
-    vectors[:, 5] = rng.uniform(0.0, 4.0, size=count)
+    vectors[:, 2] = rng.uniform(0.1, 10.0, size=count)
+    vectors[:, 3] = rng.uniform(0.0, 10.0, size=count)
+    vectors[:, 4] = rng.uniform(0.1, 10.0, size=count)
+    vectors[:, 5] = rng.uniform(0.0, 10.0, size=count)
 
     if not all(is_physically_valid(vector) for vector in vectors):
         raise RuntimeError("The benchmark generator produced an invalid candidate.")

@@ -968,7 +968,7 @@ $n_{2,\omega}=n_{2,2\omega}=1$.
 ## Para a camada 3
 
 Os índices reais da camada ativa são coordenadas independentes, cada uma no
-intervalo fechado $[1.5,6]$. Não há condição de ordenação entre elas.
+intervalo fechado $[0.1,10]$. Não há condição de ordenação entre elas.
 
 ## O que entra?
 
@@ -1359,7 +1359,7 @@ $$
 $$
 
 $$
-0\leq\operatorname{Im}(n)\leq4
+0\leq\operatorname{Im}(n)\leq10
 $$
 
 o óxido fixo e os limites individuais dos índices reais da camada ativa:
@@ -1367,8 +1367,8 @@ o óxido fixo e os limites individuais dos índices reais da camada ativa:
 $$
 d_2=10\text{ nm},\quad n_{2,\omega}=n_{2,2\omega}=1,
 \qquad
-1.5\leq\operatorname{Re}(n_{3,\omega}),
-\operatorname{Re}(n_{3,2\omega})\leq6.
+0.1\leq\operatorname{Re}(n_{3,\omega}),
+\operatorname{Re}(n_{3,2\omega})\leq10.
 $$
 
 Não há condição de ordenação entre os índices reais da camada ativa.

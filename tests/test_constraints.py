@@ -20,6 +20,8 @@ def test_official_parameter_order_and_bounds_are_exposed_immutably() -> None:
     assert PARAMETER_NAMES == ("log10_chi", "delta_d3_nm", "n3_w", "k3_w", "n3_2w", "k3_2w")
     assert PARAMETER_COUNT == 6
     assert not {"d2_nm", "n2_w", "n2_2w"}.intersection(PARAMETER_NAMES)
+    assert LOWER_BOUNDS == (-10.0, -20.0, 0.1, 0.0, 0.1, 0.0)
+    assert UPPER_BOUNDS == (10.0, 20.0, 10.0, 10.0, 10.0, 10.0)
     np.testing.assert_array_equal(lower_bounds(), LOWER_BOUNDS)
     np.testing.assert_array_equal(upper_bounds(), UPPER_BOUNDS)
 
@@ -58,7 +60,7 @@ def test_delta_d3_inclusive_bounds_are_valid(delta: float) -> None:
 
 def test_layer_3_real_indices_are_independent_and_reverse_order_is_valid() -> None:
     parameters = VALID_PARAMETERS.copy()
-    parameters[2], parameters[4] = 5.5, 2.0
+    parameters[2], parameters[4] = 9.5, 0.2
     assert is_physically_valid(parameters)
     assert "normal_dispersion_n3" not in _codes(parameters)
 
