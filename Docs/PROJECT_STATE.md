@@ -310,6 +310,23 @@ quatro pesos) e quatro comparações visuais do efeito do peso. O relatório e
 `best_solutions.csv` usam as métricas sem peso para interpretar o trade-off;
 `J_weighted` não é comparado diretamente entre pesos como métrica científica.
 
+## 12.3. Visualização combinada T/R da configuração final
+
+`analysis.plotting.plot_combined_tr_fit` produz um único eixo com os dez pontos
+experimentais de T/R e as duas curvas teóricas calculadas pelo mesmo vetor
+físico. Para visualização, usa exclusivamente o grid nominal de 601 valores
+`0:1:600` nm; `delta_d3_nm` é aplicado uma única vez, dentro do simulador.
+Não há incertezas experimentais armazenadas, portanto nenhuma barra de erro é
+inventada. A API suporta incertezas opcionais para uso futuro.
+
+O preview de infraestrutura usa um vetor físico válido de teste, não uma nova
+solução otimizada, e está em `results/preview_combined_tr/` nos formatos PNG e
+PDF. Nenhum algoritmo ou benchmark foi executado para criá-lo.
+
+Validação direcionada do checkpoint: 30 testes de plotting, simulador e
+objetivo passaram. A suíte completa com testes smoke dos otimizadores não foi
+reexecutada, em respeito à instrução de não rodar Random Search, DE, GA ou PSO.
+
 ## 13. Decisões que NÃO devem ser alteradas sem discussão
 
 ### Do not change without discussion

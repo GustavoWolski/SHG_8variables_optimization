@@ -11,7 +11,7 @@ import csv
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Iterable, Mapping, Sequence
+from typing import Callable, Final, Iterable, Mapping, Sequence
 
 import matplotlib
 
@@ -21,9 +21,11 @@ import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.ticker import EngFormatter
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 
 from experiments.data import D_NM, R_EXP, T_EXP
+from optimization.constraints import validate_physical_parameters
+from physics.simulator import SimulationResult, simulate
 
 
 FloatArray = NDArray[np.float64]
@@ -35,6 +37,7 @@ FINAL_ZOOM_FRACTION: Final[float] = 0.20
 
 EXPERIMENTAL_COLOR: Final[str] = "#333333"
 MODEL_COLOR: Final[str] = "#0072B2"
+REFLECTION_COLOR: Final[str] = "#D55E00"
 
 # Okabe-Ito-derived, color-vision-deficiency-friendly semantic mapping.
 ALGORITHM_COLORS: Final[dict[str, str]] = {
@@ -139,6 +142,166 @@ class ConvergenceSummary:
     @property
     def iqr(self) -> FloatArray:
         return self.q3 - self.q1
+
+
+@dataclass(frozen=True, slots=True)
+class ExperimentalTRData:
+    """Experimental nominal thicknesses and normalized SHG responses."""
+
+    thickness_nm: ArrayLike
+    transmission: ArrayLike
+    reflection: ArrayLike
+    transmission_uncertainty: ArrayLike | None = None
+    reflection_uncertainty: ArrayLike | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class CombinedTRPlotConfig:
+    """Output settings for a combined dense transmission/reflection plot."""
+
+    output_directory: Path
+    filename_stem: str = "combined_tr_fit"
+    png_dpi: int = PNG_DPI
+    overwrite: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class CombinedTRPlotResult:
+    """Dense model responses and paths written by :func:`plot_combined_tr_fit`."""
+
+    p: FloatArray
+    thickness_plot_nm: FloatArray
+    T_theoretical: FloatArray
+    R_theoretical: FloatArray
+    experimental_point_count: int
+    png_path: Path
+    pdf_path: Path
+
+
+CombinedTRSimulator = Callable[[FloatArray, FloatArray], SimulationResult]
+
+
+def _finite_vector(values: ArrayLike, name: str) -> FloatArray:
+    array = np.asarray(values, dtype=np.float64)
+    if array.ndim != 1 or array.size == 0 or not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must be a non-empty, finite one-dimensional array.")
+    return array.copy()
+
+
+def _optional_uncertainty(values: ArrayLike | None, expected_size: int, name: str) -> FloatArray | None:
+    if values is None:
+        return None
+    uncertainty = _finite_vector(values, name)
+    if uncertainty.size != expected_size or np.any(uncertainty < 0.0):
+        raise ValueError(f"{name} must contain one non-negative value per experimental point.")
+    return uncertainty
+
+
+def plot_combined_tr_fit(
+    p: ArrayLike,
+    experimental_data: ExperimentalTRData,
+    output: CombinedTRPlotConfig,
+    *,
+    algorithm: str | None = None,
+    seed: int | None = None,
+    simulator: CombinedTRSimulator = simulate,
+) -> CombinedTRPlotResult:
+    """Plot experimental T/R and one dense physical-model evaluation on one axis.
+
+    The model receives the untouched nominal grid ``0:1:600`` and applies
+    ``delta_d3_nm`` internally. T and R come from the same simulator call and
+    therefore necessarily use the same physical vector.
+    """
+
+    parameters = validate_physical_parameters(p)
+    thickness_exp = _finite_vector(experimental_data.thickness_nm, "experimental thickness")
+    transmission_exp = _finite_vector(experimental_data.transmission, "experimental transmission")
+    reflection_exp = _finite_vector(experimental_data.reflection, "experimental reflection")
+    if transmission_exp.size != thickness_exp.size or reflection_exp.size != thickness_exp.size:
+        raise ValueError("Experimental thickness, transmission, and reflection must have equal lengths.")
+    transmission_error = _optional_uncertainty(
+        experimental_data.transmission_uncertainty, thickness_exp.size, "transmission uncertainty"
+    )
+    reflection_error = _optional_uncertainty(
+        experimental_data.reflection_uncertainty, thickness_exp.size, "reflection uncertainty"
+    )
+
+    thickness_plot_nm = np.arange(0.0, 601.0, 1.0, dtype=np.float64)
+    dense = simulator(parameters.copy(), thickness_plot_nm.copy())
+    transmission_fit = _finite_vector(dense.T, "dense theoretical transmission")
+    reflection_fit = _finite_vector(dense.R, "dense theoretical reflection")
+    if transmission_fit.size != thickness_plot_nm.size or reflection_fit.size != thickness_plot_nm.size:
+        raise ValueError("The dense simulator response must contain exactly 601 T and R values.")
+
+    stem = output.filename_stem.strip()
+    if not stem or Path(stem).name != stem:
+        raise ValueError("filename_stem must be a non-empty filename without directory components.")
+    if output.png_dpi < 72:
+        raise ValueError("png_dpi must be at least 72.")
+    png_path = output.output_directory / f"{stem}.png"
+    pdf_path = output.output_directory / f"{stem}.pdf"
+    if not output.overwrite and (png_path.exists() or pdf_path.exists()):
+        raise FileExistsError("Combined T/R plot output already exists; choose a new preview name or enable overwrite.")
+    output.output_directory.mkdir(parents=True, exist_ok=True)
+
+    with plt.rc_context(PLOT_RC_PARAMS):
+        figure, axis = plt.subplots(figsize=(9.2, 5.4), layout="constrained")
+        if transmission_error is None:
+            axis.plot(
+                thickness_exp, transmission_exp, linestyle="none", marker="o",
+                markerfacecolor="white", markeredgewidth=1.3, color=MODEL_COLOR,
+                label="T experimental", zorder=4,
+            )
+        else:
+            axis.errorbar(
+                thickness_exp, transmission_exp, yerr=transmission_error, fmt="o",
+                markerfacecolor="white", markeredgewidth=1.3, capsize=2.5,
+                color=MODEL_COLOR, label="T experimental", zorder=4,
+            )
+        axis.plot(thickness_plot_nm, transmission_fit, color=MODEL_COLOR, label="T fit", zorder=2)
+
+        if reflection_error is None:
+            axis.plot(
+                thickness_exp, reflection_exp, linestyle="none", marker="D",
+                markerfacecolor="white", markeredgewidth=1.3, color=REFLECTION_COLOR,
+                label="R experimental", zorder=4,
+            )
+        else:
+            axis.errorbar(
+                thickness_exp, reflection_exp, yerr=reflection_error, fmt="D",
+                markerfacecolor="white", markeredgewidth=1.3, capsize=2.5,
+                color=REFLECTION_COLOR, label="R experimental", zorder=4,
+            )
+        axis.plot(thickness_plot_nm, reflection_fit, color=REFLECTION_COLOR, label="R fit", zorder=2)
+        axis.set(
+            xlabel=r"Nominal active-layer thickness $d_3$ (nm)",
+            ylabel="Normalized SHG response",
+            xlim=(0.0, 600.0),
+        )
+        annotation = " · ".join(
+            item for item in (algorithm.strip() if algorithm else None, f"seed {seed}" if seed is not None else None) if item
+        )
+        axis.set_title("Transmission and reflection" + (f" — {annotation}" if annotation else ""))
+        axis.grid(True, linestyle="--", linewidth=0.55, alpha=0.4)
+        handles, labels = axis.get_legend_handles_labels()
+        figure.legend(handles, labels, loc="outside upper center", ncol=4)
+        figure.savefig(png_path, dpi=output.png_dpi, facecolor="white")
+        figure.savefig(
+            pdf_path,
+            facecolor="white",
+            metadata={"Creator": "SHG combined T/R plotting", "CreationDate": None, "ModDate": None},
+        )
+        plt.close(figure)
+
+    return CombinedTRPlotResult(
+        p=parameters.copy(),
+        thickness_plot_nm=thickness_plot_nm,
+        T_theoretical=transmission_fit,
+        R_theoretical=reflection_fit,
+        experimental_point_count=thickness_exp.size,
+        png_path=png_path,
+        pdf_path=pdf_path,
+    )
 
 
 def default_algorithm_specs(results_root: Path) -> tuple[AlgorithmSpec, ...]:

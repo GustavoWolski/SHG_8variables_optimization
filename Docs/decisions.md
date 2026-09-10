@@ -554,6 +554,20 @@ reprodução literal do MATLAB legado versionado. Os fixtures MATLAB existentes
 permanecem como registro histórico, não como regressão numérica da nova API.
 Esta decisão não autoriza nem executa benchmark.
 
+## D-027 — Visualização combinada T/R em grid nominal denso
+
+A visualização final de ajuste usa um único eixo com T e R experimentais e
+teóricos. A curva teórica é obtida por uma única chamada ao simulador, com o
+mesmo vetor `p` para ambas as respostas, no grid nominal
+`np.arange(0.0, 601.0, 1.0)`. O simulador aplica internamente
+`delta_d3_nm`; a camada de análise não desloca os dados nem corrige o grid.
+
+O grid denso pertence apenas à visualização. O objetivo continua sendo
+calculado exclusivamente nos dez pontos experimentais. Não há interpolação,
+spline, smoothing ou criação de observações. A API recebe dados e configuração
+de saída explicitamente, aceita incertezas opcionais quando fornecidas e salva
+PNG de alta resolução e PDF vetorial sem sobrescrever por padrão.
+
 ## Ambiguidades abertas
 
 1. Os caminhos foram normalizados para `docs/methodology.md`,
