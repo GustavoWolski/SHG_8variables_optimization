@@ -13,7 +13,7 @@ def test_physical_and_normalized_vectors_have_six_coordinates() -> None:
     assert parameters.shape == (6,)
 
 
-@pytest.mark.parametrize(("coordinate", "expected"), [(0.0, -20.0), (0.5, 0.0), (1.0, 20.0)])
+@pytest.mark.parametrize(("coordinate", "expected"), [(0.0, -50.0), (0.5, 0.0), (1.0, 50.0)])
 def test_delta_d3_linear_mapping(coordinate: float, expected: float) -> None:
     normalized = np.full(6, 0.5)
     normalized[1] = coordinate
@@ -21,8 +21,8 @@ def test_delta_d3_linear_mapping(coordinate: float, expected: float) -> None:
 
 
 def test_all_coordinates_map_to_their_independent_bounds() -> None:
-    np.testing.assert_array_equal(to_physical(np.zeros(6)), [-10.0, -20.0, 0.1, 0.0, 0.1, 0.0])
-    np.testing.assert_array_equal(to_physical(np.ones(6)), [10.0, 20.0, 10.0, 10.0, 10.0, 10.0])
+    np.testing.assert_array_equal(to_physical(np.zeros(6)), [-10.0, -50.0, 0.1, 0.0, 0.1, 0.0])
+    np.testing.assert_array_equal(to_physical(np.ones(6)), [10.0, 50.0, 10.0, 10.0, 10.0, 10.0])
 
 
 def test_layer_3_real_indices_map_independently_and_allow_reverse_order() -> None:

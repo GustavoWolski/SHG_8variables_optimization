@@ -991,7 +991,7 @@ e fonte na camada 3 usam:
 
 $$
 d_{3,\mathrm{efetiva}}=\max(d_{3,\mathrm{nominal}}+\Delta d_3,0),
-\qquad -20\leq\Delta d_3\leq20\text{ nm}.
+\qquad -50\leq\Delta d_3\leq50\text{ nm}.
 $$
 
 O mesmo $\Delta d_3$ é aplicado globalmente a todos os pontos e somente então
@@ -1355,7 +1355,7 @@ Região fisicamente permitida.
 Inclui, entre outras restrições:
 
 $$
--20\leq\Delta d_3\leq20\text{ nm}
+-50\leq\Delta d_3\leq50\text{ nm}
 $$
 
 $$

@@ -910,6 +910,7 @@ def regenerate_benchmark_figures(
     best_fit_limits = determine_best_fit_axis_limits(results)
     summaries = calculate_convergence_summaries(results)
     main_y_limits = convergence_axis_limits(summaries)
+    experimental = ExperimentalTRData(D_NM, T_EXP, R_EXP)
 
     for result, summary in zip(results, summaries, strict=True):
         written.extend(
@@ -929,6 +930,19 @@ def regenerate_benchmark_figures(
                 save_vector=save_vector,
             )
         )
+        if result.best_run.best_p.size == 6:
+            combined = plot_combined_tr_fit(
+                result.best_run.best_p,
+                experimental,
+                CombinedTRPlotConfig(
+                    result.spec.directory,
+                    "best_fit_combined_tr",
+                    overwrite=True,
+                ),
+                algorithm=result.spec.name,
+                seed=result.best_run.seed,
+            )
+            written.extend((combined.png_path, combined.pdf_path))
 
     written.extend(
         plot_best_fits_comparison(
@@ -984,6 +998,27 @@ def regenerate_benchmark_figures(
                 save_vector=save_vector,
             )
         )
+
+    six_parameter_runs = [
+        (result, run)
+        for result in results
+        for run in result.runs
+        if run.best_p.size == 6
+    ]
+    if six_parameter_runs:
+        global_result, global_run = min(six_parameter_runs, key=lambda item: item[1].best_J)
+        combined_global = plot_combined_tr_fit(
+            global_run.best_p,
+            experimental,
+            CombinedTRPlotConfig(
+                comparisons_directory,
+                "global_best_combined_tr",
+                overwrite=True,
+            ),
+            algorithm=global_result.spec.name,
+            seed=global_run.seed,
+        )
+        written.extend((combined_global.png_path, combined_global.pdf_path))
 
     written.append(write_algorithm_summary(results, comparisons_directory / "current_algorithm_summary.csv"))
     return tuple(written)

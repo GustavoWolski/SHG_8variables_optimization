@@ -24,7 +24,7 @@ from numpy.typing import NDArray
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT / "src"))
 
-from optimization.constraints import is_physically_valid  # noqa: E402
+from optimization.constraints import is_physically_valid, lower_bounds, upper_bounds  # noqa: E402
 from optimization.objective import ObjectiveEvaluator  # noqa: E402
 
 
@@ -55,13 +55,9 @@ def generate_valid_vectors(count: int, seed: int) -> NDArray[np.float64]:
         raise ValueError("count must be positive.")
 
     rng = np.random.default_rng(seed)
-    vectors = np.empty((count, 6), dtype=np.float64)
-    vectors[:, 0] = rng.uniform(-10.0, 10.0, size=count)
-    vectors[:, 1] = rng.uniform(-20.0, 20.0, size=count)
-    vectors[:, 2] = rng.uniform(0.1, 10.0, size=count)
-    vectors[:, 3] = rng.uniform(0.0, 10.0, size=count)
-    vectors[:, 4] = rng.uniform(0.1, 10.0, size=count)
-    vectors[:, 5] = rng.uniform(0.0, 10.0, size=count)
+    lower = lower_bounds()
+    upper = upper_bounds()
+    vectors = rng.uniform(lower, upper, size=(count, lower.size))
 
     if not all(is_physically_valid(vector) for vector in vectors):
         raise RuntimeError("The benchmark generator produced an invalid candidate.")

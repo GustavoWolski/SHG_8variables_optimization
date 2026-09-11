@@ -14,8 +14,8 @@ NORMALIZED_PARAMETER_COUNT: Final[int] = PARAMETER_COUNT
 ACTIVE_INDEX_LOWER_BOUND: Final[float] = 0.1
 ACTIVE_INDEX_UPPER_BOUND: Final[float] = 10.0
 ACTIVE_EXTINCTION_UPPER_BOUND: Final[float] = 10.0
-DELTA_D3_LOWER_BOUND_NM: Final[float] = -20.0
-DELTA_D3_UPPER_BOUND_NM: Final[float] = 20.0
+DELTA_D3_LOWER_BOUND_NM: Final[float] = -50.0
+DELTA_D3_UPPER_BOUND_NM: Final[float] = 50.0
 
 
 def validate_normalized(z: ArrayLike) -> NDArray[np.float64]:

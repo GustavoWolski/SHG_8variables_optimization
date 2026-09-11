@@ -26,7 +26,7 @@ n2_w = n2_2w = 1, fora do vetor de otimização.
 ## 4. Bounds e restrições físicas
 
     -10 <= log10_chi <= 10
-    -20 <= delta_d3_nm <= 20
+    -50 <= delta_d3_nm <= 50
     0.1 <= n3_w, n3_2w <= 10
     0 <= k3_w, k3_2w <= 10
 
@@ -71,7 +71,7 @@ pois o MATLAB versionado não contém `p(9)`/`delta_d3_nm` nem o óxido fixo.
 ## 8. Parametrização normalizada
 
 Todos os algoritmos trabalham no mesmo cubo z ∈ [0,1]^6 e usam a transformação
-z → p de src/optimization/parameterization.py. `delta_d3_nm = -20 + 40*z[1]`;
+z → p de src/optimization/parameterization.py. `delta_d3_nm = -50 + 100*z[1]`;
 as demais coordenadas são mapeadas independentemente entre seus bounds. Não há
 transformação triangular, `DELTA_N` nem restrição de dispersão normal.
 
@@ -276,7 +276,7 @@ partir dos CSVs salvos, sem alterar seus hashes SHA-256.
 
 ## 12. Estado dos testes
 
-    pytest: 157 passed
+    pytest: 164 passed
 
 A suíte cobre Fresnel, vidro, simulador, regressão MATLAB/Octave, constraints,
 objective, parameterization, Random Search, Differential Evolution, Genetic
@@ -372,6 +372,97 @@ passaram. Nenhum otimizador ou benchmark científico foi executado. Os
 resultados existentes foram produzidos com os limites anteriores e permanecem
 preservados como históricos.
 
+## 12.6. Benchmark com bounds ópticos corrigidos
+
+Após autorização explícita, foi executado o benchmark completo em
+`results/benchmark_bounds_0p1_10_run01/`, com Random Search, Differential
+Evolution, Genetic Algorithm e Particle Swarm Optimization, seeds 1–5 e
+50.000 avaliações físicas por seed. São 20 runs e 1.000.000 avaliações no
+total; os resultados anteriores não foram sobrescritos.
+
+| Algoritmo | Melhor J | Mediana J | Pior J | Melhor seed |
+|---|---:|---:|---:|---:|
+| Random Search | 1.0854690966837481 | 1.2333787914047556 | 2.3087509767536254 | 4 |
+| Differential Evolution | 0.4125867577229127 | 0.4197060799904004 | 0.4197060799904005 | 1 |
+| Genetic Algorithm | 0.4523284944037635 | 0.4834647674176606 | 0.5107421112407384 | 3 |
+| Particle Swarm Optimization | 0.4197060799905111 | 0.4197060799912715 | 0.4197060847612271 | 4 |
+
+O melhor vetor global foi o DE, seed 1:
+
+    p = [9.117483500679445, -19.99999999999996,
+         0.1000000000000011, 2.084349321411794,
+         1.837919368782185, 0.2391579663878279]
+
+Para ele, `J_T = 0.2530784417068134` e
+`J_R = 0.1595083160160993`. A regeneração padronizada produziu 25 artefatos
+PNG/PDF/CSV em `comparisons/` e confirmou que os CSVs de origem permaneceram
+inalterados por hash SHA-256. Em complemento, foram gerados e inspecionados os
+gráficos combinados T/R densos de cada algoritmo e do melhor global, todos em
+PNG e PDF, sem reexecutar os otimizadores.
+
+## 12.7. Sensibilidade 1D da solução de referência PSO seed 4
+
+Foi implementada e executada a análise one-at-a-time em
+`results/benchmark_bounds_0p1_10_run01/sensitivity/`, usando exatamente o
+vetor PSO seed 4 solicitado. A reavaliação com `delta_d3_nm = -20.0` produziu
+`J = 0.41970607999048304`, `J_T = 0.06542398510382935` e
+`J_R = 0.3542820948866537`. Esse vetor é tratado como referência da análise;
+a melhor solução global do benchmark corrente continua sendo DE seed 1.
+
+Foram realizadas 1.212 avaliações físicas: seis parâmetros, duas escalas e
+101 pontos por escala. Nenhum otimizador foi executado e as outras cinco
+coordenadas permaneceram fixas em cada sweep. Foram salvos seis CSVs com as
+duas escalas, resumo de métricas, relatório e figuras local/global em PNG/PDF.
+
+Pelas larguras normalizadas do vale local a 1%, com amplitude global de J como
+desempate, `log10_chi` e `n3_w` foram classificados como mais sensíveis;
+`k3_w` e `k3_2w`, intermediários; `delta_d3_nm` e `n3_2w`, menos sensíveis.
+Não houve indício de múltiplos mínimos resolvidos pela grade global de 101
+pontos. `delta_d3_nm` permaneceu no limite inferior, sem extrapolação abaixo
+de -20 nm. Validação direcionada: 44 testes passaram.
+
+## 12.8. Benchmark com `delta_d3_nm` em [-50,50] nm
+
+Por autorização explícita, o bound de `delta_d3_nm` foi ampliado para
+`[-50,50]` nm, sem alterar qualquer outra constraint, a física, o objetivo ou
+os hiperparâmetros. O benchmark completo foi executado em
+`results/benchmark_delta_d3_m50_p50_run01/`: quatro algoritmos, seeds 1–5 e
+50.000 avaliações físicas por seed, totalizando 20 runs e 1.000.000 de
+avaliações.
+
+| Algoritmo | Melhor J | Mediana J | Pior J | Melhor seed |
+|---|---:|---:|---:|---:|
+| Random Search | 0.9648379040865533 | 1.464010869057766 | 2.187652558477957 | 2 |
+| Differential Evolution | 0.3223303953492892 | 0.3223303953492894 | 0.3223303953492895 | 4 |
+| Genetic Algorithm | 0.3868807865990599 | 0.3998652679722692 | 0.7501826606349705 | 3 |
+| Particle Swarm Optimization | 0.3223303953508441 | 0.3223304999765833 | 0.3223308880820240 | 5 |
+
+A melhor solução global foi DE, seed 4, com `J_T = 0.09661596943066969`,
+`J_R = 0.2257144259186195` e
+`p = [9.497146298611646, -45.295433031560876, 0.7094312273848625,
+1.7489327919955444, 3.221630915589135, 0.37472749107016146]`. O novo melhor
+J é 21,8757% menor que no benchmark anterior com `delta_d3_nm ∈ [-20,20]`.
+A solução migrou da antiga fronteira para o interior do novo espaço.
+
+Os 20 vetores passaram na reavaliação independente, nos bounds e na contagem
+exata do budget. A suíte completa passou com 164 testes. A regeneração criou
+35 artefatos derivados e manteve os hashes dos CSVs de origem inalterados.
+Há gráficos combinados T/R por algoritmo e para o melhor global em PNG/PDF.
+
+## 12.9. Sensibilidade 1D do melhor global com bound ampliado
+
+A análise one-at-a-time da melhor solução DE seed 4 foi executada em
+`results/benchmark_delta_d3_m50_p50_run01/sensitivity/`, com as mesmas grades
+da D-029 e 1.212 avaliações físicas. `delta_d3_nm = -45.295433031560876` está
+no interior do intervalo; o mínimo de sua grade global ocorreu em -45 nm.
+
+Pela largura normalizada do vale local a 1%, `log10_chi` e `n3_w` foram mais
+sensíveis; `k3_w` e `k3_2w`, intermediários; `delta_d3_nm` e `n3_2w`, menos
+sensíveis. A grade resolveu também um mínimo de extremidade em +50 nm no eixo
+de `delta_d3_nm`; é um indício 1D dependente da resolução, não uma solução
+reotimizada. A análise não estabelece correlações nem identificabilidade
+formal.
+
 ## 13. Decisões que NÃO devem ser alteradas sem discussão
 
 ### Do not change without discussion
@@ -402,13 +493,14 @@ preservados como históricos.
 ## 15. Ponto exato de retomada
 
 O checkpoint atual contém a configuração final de seis variáveis, óxido fixo,
-correção de espessura e os bounds ópticos corrigidos para `[0.1,10]` nas
-partes reais e `[0,10]` nas partes imaginárias da camada ativa. O benchmark
-final completo de RS, DE, GA e PSO foi executado com os bounds anteriores e
-permanece preservado como resultado histórico; não foi reexecutado após esta
-correção.
-A retomada deve partir de `results/final_6parameter_model/final_report.md` e das
-tabelas em `results/final_6parameter_model/comparisons/`. A melhor solução
-global atual é DE seed 3 com `J = 0.4933365610782263`. O fato de
-`delta_d3_nm` e `n3_w` estarem no limite inferior deve ser considerado em
-qualquer discussão de identificabilidade ou revisão futura dos bounds.
+bounds ópticos `[0.1,10]`/`[0,10]` e `delta_d3_nm ∈ [-50,50]`. O benchmark
+corrente está em `results/benchmark_delta_d3_m50_p50_run01/`; os benchmarks
+anteriores permanecem preservados como históricos.
+
+A melhor solução corrente é DE seed 4, com `J = 0.3223303953492892` e
+`delta_d3_nm = -45.295433031560876`, no interior do novo bound. Os gráficos
+combinados T/R estão em cada pasta de algoritmo como
+`best_fit_combined_tr.png/.pdf`, e o melhor global está em
+`comparisons/global_best_combined_tr.png/.pdf`. O relatório principal está em
+`benchmark_report.md`; a sensibilidade global/local do melhor vetor está em
+`sensitivity/`.

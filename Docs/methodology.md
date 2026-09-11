@@ -135,7 +135,7 @@ O logaritmo é utilizado apenas para tornar o espaço de otimização numericame
 ## 6.2 Correção global da espessura ativa
 
 $$
--20\leq\Delta d_3\leq20\text{ nm}
+-50\leq\Delta d_3\leq50\text{ nm}
 $$
 
 O óxido é fixo: $d_2=10$ nm e $n_{2,\omega}=n_{2,2\omega}=1$.
@@ -539,7 +539,7 @@ A escolha definitiva deverá ser justificada de acordo com a estrutura final dos
 Uma solução só será considerada válida se respeitar:
 
 $$
--20\leq\Delta d_3\leq20\text{ nm}
+-50\leq\Delta d_3\leq50\text{ nm}
 $$
 
 $$
@@ -776,7 +776,7 @@ $$
 $$
 
 $$
--20\leq\Delta d_3\leq20\text{ nm}
+-50\leq\Delta d_3\leq50\text{ nm}
 $$
 
 $$

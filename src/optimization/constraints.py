@@ -35,7 +35,7 @@ class ConstraintViolation:
 
 PARAMETER_DEFINITIONS: Final[tuple[ParameterDefinition, ...]] = (
     ParameterDefinition("log10_chi", -10.0, 10.0, "log10(chi)"),
-    ParameterDefinition("delta_d3_nm", -20.0, 20.0, "nm"),
+    ParameterDefinition("delta_d3_nm", -50.0, 50.0, "nm"),
     ParameterDefinition("n3_w", 0.1, 10.0, "dimensionless"),
     ParameterDefinition("k3_w", 0.0, 10.0, "dimensionless"),
     ParameterDefinition("n3_2w", 0.1, 10.0, "dimensionless"),

@@ -581,6 +581,41 @@ normalizações e algoritmos permanecem iguais. Os benchmarks existentes foram
 obtidos com os bounds anteriores e permanecem preservados como históricos;
 esta decisão não autoriza nem executa um novo benchmark.
 
+## D-029 — Sensibilidade 1D da solução PSO seed 4
+
+A análise de sensibilidade univariada usa exatamente o vetor PSO seed 4
+fornecido, com `delta_d3_nm` tratado numericamente como `-20.0`. Ele reproduz
+`J = 0.41970607999048304`, mas é denominado solução de referência porque o
+benchmark pós-correção contém um valor menor na DE seed 1.
+
+Para cada uma das seis coordenadas, somente essa coordenada varia e as outras
+cinco permanecem fixas. A grade global contém 101 pontos uniformes nos bounds
+completos; a grade local contém 101 pontos numa janela de ±10% da amplitude do
+bound, truncada nos limites e incluindo exatamente a coordenada de referência.
+As larguras de vale de 1% e 5% são estimadas na grade local, com interpolação
+linear nas travessias do limiar. Curvatura usa ajuste quadrático nos três
+pontos locais mais próximos. A grade global é usada para a forma geral e para
+detectar indícios de múltiplos mínimos resolvidos pela grade.
+
+Esta análise totaliza 1.212 avaliações físicas, não reotimiza parâmetros e não
+executa nenhum algoritmo. As larguras são indicadores práticos da função
+objetivo, não intervalos de confiança; a análise 1D não detecta compensações,
+correlações ou identificabilidade formal.
+
+## D-030 — Ampliação de `delta_d3_nm` para ±50 nm
+
+Por autorização explícita, o bound da correção global de espessura passa a
+ser `delta_d3_nm ∈ [-50,50]` nm. A transformação compartilhada passa a ser
+`delta_d3_nm = -50 + 100*z[1]`. Nenhum outro bound, constraint, termo do
+simulador, unidade, normalização, função objetivo ou hiperparâmetro dos
+algoritmos é alterado.
+
+O benchmark confirmatório deve manter Random Search, Differential Evolution,
+Genetic Algorithm e Particle Swarm Optimization, seeds 1–5 e 50.000 avaliações
+físicas por seed, em uma nova raiz de resultados. A sensibilidade 1D deve usar
+a melhor solução global dessa rodada e os bounds ampliados, preservando as
+grades global/local e as limitações metodológicas da D-029.
+
 ## Ambiguidades abertas
 
 1. Os caminhos foram normalizados para `docs/methodology.md`,
